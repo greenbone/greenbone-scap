@@ -193,7 +193,7 @@ class VendorCommentModel(Base):
 class ConfigurationModel(Base):
     __tablename__ = "cve_configurations"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[Uuid] = mapped_column(Uuid(as_uuid=False), primary_key=True)
     cve_id: Mapped[cve_fk]
     operator: Mapped[str | None]
     negate: Mapped[bool | None]
@@ -207,8 +207,9 @@ class ConfigurationModel(Base):
 class NodeModel(Base):
     __tablename__ = "cve_nodes"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    configuration_id: Mapped[int] = mapped_column(
+    id: Mapped[Uuid] = mapped_column(Uuid(as_uuid=False), primary_key=True)
+    configuration_id: Mapped[Uuid] = mapped_column(
+        Uuid(as_uuid=False),
         ForeignKey("cve_configurations.id", ondelete="CASCADE"),
         index=True,
     )
@@ -229,7 +230,8 @@ class CPEMatchModel(Base):
     match_criteria_id: Mapped[UUID] = mapped_column(
         Uuid(as_uuid=False), primary_key=True
     )
-    node_id: Mapped[int] = mapped_column(
+    node_id: Mapped[UUID] = mapped_column(
+        Uuid(as_uuid=False),
         ForeignKey("cve_nodes.id", ondelete="CASCADE"),
         primary_key=True,
         index=True,
