@@ -126,7 +126,7 @@ class CVEDescriptionModel(Base):
 
     cve_id: Mapped[cve_fk] = mapped_column(primary_key=True)
     lang: Mapped[str] = mapped_column(primary_key=True)
-    value: Mapped[str] = mapped_column(primary_key=True)
+    value: Mapped[str]
 
     cve: Mapped[CVEModel] = relationship(back_populates="descriptions")
 

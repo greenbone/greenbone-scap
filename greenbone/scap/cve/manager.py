@@ -286,7 +286,6 @@ class CVEManager(AsyncContextManager):
                     index_elements=[
                         CVEDescriptionModel.cve_id,
                         CVEDescriptionModel.lang,
-                        CVEDescriptionModel.value,
                     ],
                     set_=dict(
                         cve_id=statement.excluded.cve_id,
