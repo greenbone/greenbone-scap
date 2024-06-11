@@ -14,6 +14,7 @@ from typing import (
     Self,
     Sequence,
 )
+from uuid import uuid4
 
 from pontos.nvd.models.cve import CVE
 from sqlalchemy import ColumnElement, and_, delete, func, select
@@ -455,51 +456,68 @@ class CVEManager(AsyncContextManager):
 
         await connection.execute(delete_statement)
 
+        configuration_statement = self._db.insert(ConfigurationModel)
+        node_statement = self._db.insert(NodeModel)
+        match_statement = self._db.insert(CPEMatchModel)
+
+        configurations = []
+        matches = []
+        nodes = []
+
         for cve in cves:
+            if not cve.configurations:
+                continue
+
             for configuration in cve.configurations:
-                statement = (
-                    self._db.insert(ConfigurationModel)  # type: ignore[assignment]
-                    .returning(ConfigurationModel.id)
-                    .values(
+                configuration_id = uuid4()
+                configurations.append(
+                    dict(
+                        id=configuration_id,
                         cve_id=cve.id,
                         operator=configuration.operator,
                         negate=configuration.negate,
                     )
                 )
 
-                result = await connection.execute(statement)
-                configuration_id = result.scalar_one()
+                if not configuration.nodes:
+                    continue
 
                 for node in configuration.nodes:
-                    node_statement = (
-                        self._db.insert(NodeModel)
-                        .returning(NodeModel.id)
-                        .values(
+                    node_id = uuid4()
+                    nodes.append(
+                        dict(
+                            id=node_id,
                             configuration_id=configuration_id,
                             operator=node.operator,
                             negate=node.negate,
                         )
                     )
-                    result = await connection.execute(node_statement)
-                    node_id = result.scalar_one()
 
-                    statement = self._db.insert(CPEMatchModel)  # type: ignore[assignment]
+                    if not node.cpe_match:
+                        continue
 
-                    matches = [
-                        dict(
-                            node_id=node_id,
-                            match_criteria_id=match.match_criteria_id,
-                            vulnerable=match.vulnerable,
-                            criteria=match.criteria,
-                            version_start_excluding=match.version_start_excluding,
-                            version_start_including=match.version_start_including,
-                            version_end_excluding=match.version_end_excluding,
-                            version_end_including=match.version_end_including,
-                        )
-                        for match in (node.cpe_match or [])
-                    ]
+                    matches.extend(
+                        [
+                            dict(
+                                node_id=node_id,
+                                match_criteria_id=match.match_criteria_id,
+                                vulnerable=match.vulnerable,
+                                criteria=match.criteria,
+                                version_start_excluding=match.version_start_excluding,
+                                version_start_including=match.version_start_including,
+                                version_end_excluding=match.version_end_excluding,
+                                version_end_including=match.version_end_including,
+                            )
+                            for match in node.cpe_match
+                        ]
+                    )
 
-                    await connection.execute(statement, matches)
+        if configurations:
+            await connection.execute(configuration_statement, configurations)
+        if nodes:
+            await connection.execute(node_statement, nodes)
+        if matches:
+            await connection.execute(match_statement, matches)
 
     @asynccontextmanager
     async def session(self) -> AsyncGenerator[AsyncSession, None]:
