@@ -10,7 +10,7 @@ from pathlib import Path
 
 from pontos.testing import temp_directory
 
-from greenbone.scap.cpe.cli.download import parse_args
+from greenbone.scap.cpe.cli.download import DEFAULT_QUEUE_SIZE, parse_args
 
 
 class ParseArgsTestCase(unittest.TestCase):
@@ -31,6 +31,8 @@ class ParseArgsTestCase(unittest.TestCase):
         self.assertIsNone(args.nvd_api_key)
         self.assertIsNone(args.since)
         self.assertIsNone(args.since_from_file)
+        self.assertIsNone(args.chunk_size)
+        self.assertEqual(args.queue_size, DEFAULT_QUEUE_SIZE)
 
     def test_database(self):
         args = parse_args(
@@ -151,3 +153,19 @@ class ParseArgsTestCase(unittest.TestCase):
                     "2024-01-01T15:24:17.000000+00:00",
                 ]
             )
+
+    def test_chunk_size(self):
+        args = parse_args(["--chunk-size", "42"])
+
+        self.assertEqual(args.chunk_size, 42)
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["--chunk-size", "foo"])
+
+    def test_queue_size(self):
+        args = parse_args(["--queue-size", "42"])
+
+        self.assertEqual(args.queue_size, 42)
+
+        with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
+            parse_args(["--queue-size", "foo"])

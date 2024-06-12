@@ -137,6 +137,22 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
         help="Use a NVD API key for downloading the CVEs. Using an API key "
         "allows for downloading with extended rate limits.",
     )
+    parser.add_argument(
+        "--chunk-size",
+        help="Number of CVEs to download and process in one request. A lower "
+        "number allows for more frequent updates and feedback.",
+        type=int,
+        metavar="N",
+    )
+    parser.add_argument(
+        "--queue-size",
+        help="Size of the download queue. It sets the maximum number of CVEs "
+        "kept in the memory. The maximum number of CVEs is chunk size * queue "
+        "size. Default: %(default)s.",
+        type=int,
+        metavar="N",
+        default=DEFAULT_QUEUE_SIZE,
+    )
     return parser.parse_args(args)
 
 
@@ -145,10 +161,12 @@ class CVECli:
         self,
         console: Console,
         *,
-        queue: asyncio.Queue[Sequence[CVE]] | None = None,
         verbose: int = 0,
+        chunk_size: int | None = None,
+        queue_size: int = DEFAULT_QUEUE_SIZE,
     ) -> None:
-        self.queue = queue or asyncio.Queue(DEFAULT_QUEUE_SIZE)
+        self.queue: asyncio.Queue[Sequence[CVE]] = asyncio.Queue(queue_size)
+        self.chunk_size = chunk_size
         self.console = console
         self.event = asyncio.Event()
         self.verbose = verbose
@@ -260,6 +278,7 @@ class CVECli:
                     request_results=request_results,
                     last_modified_start_date=last_modified_start_date,
                     last_modified_end_date=last_modified_end_date,
+                    results_per_page=self.chunk_size,
                 )
 
         result_count = len(results)  # type: ignore
@@ -310,6 +329,9 @@ async def download(console: Console, error_console: Console):
     )
     nvd_api_key: str | None = args.nvd_api_key or os.environ.get("NVD_API_KEY")
     updated_cves_file: Path | None = args.store_updated_cves
+
+    chunk_size: int | None = args.chunk_size
+    queue_size: int = args.queue_size
 
     until = now() if run_time_file else None
 
@@ -374,7 +396,9 @@ async def download(console: Console, error_console: Console):
     if verbose:
         console.log(f"Using PostgreSQL database {cve_database_name} for CVEs")
 
-    cli = CVECli(console, verbose=verbose)
+    cli = CVECli(
+        console, verbose=verbose, chunk_size=chunk_size, queue_size=queue_size
+    )
 
     with Progress(console=console) as progress:
         async with (

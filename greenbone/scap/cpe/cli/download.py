@@ -127,6 +127,23 @@ def parse_args(args: Sequence[str] | None = None) -> Namespace:
         help="Use a NVD API key for downloading the CPEs. Using an API key "
         "allows for downloading with extended rate limits.",
     )
+    parser.add_argument(
+        "--chunk-size",
+        help="Number of CPEs to download and process in one request. A lower "
+        "number allows for more frequent updates and feedback.",
+        type=int,
+        metavar="N",
+    )
+    parser.add_argument(
+        "--queue-size",
+        help="Size of the download queue. It sets the maximum number of CPEs "
+        "kept in the memory. The maximum number of CPEs is chunk size * queue "
+        "size. Default: %(default)s.",
+        type=int,
+        metavar="N",
+        default=DEFAULT_QUEUE_SIZE,
+    )
+
     return parser.parse_args(args)
 
 
@@ -135,10 +152,12 @@ class CPECli:
         self,
         console: Console,
         *,
-        queue: asyncio.Queue[Sequence[CPE]] | None = None,
         verbose: int = 0,
+        chunk_size: int | None = None,
+        queue_size: int = DEFAULT_QUEUE_SIZE,
     ) -> None:
-        self.queue = queue or asyncio.Queue(DEFAULT_QUEUE_SIZE)
+        self.queue: asyncio.Queue[Sequence[CPE]] = asyncio.Queue(queue_size)
+        self.chunk_size = chunk_size
         self.console = console
         self.event = asyncio.Event()
         self.verbose = verbose
@@ -254,6 +273,7 @@ class CPECli:
                     request_results=request_results,
                     last_modified_start_date=last_modified_start_date,
                     last_modified_end_date=last_modified_end_date,
+                    results_per_page=self.chunk_size,
                 )
 
         result_count = len(results)  # type: ignore
@@ -304,6 +324,9 @@ async def download(console: Console, error_console: Console) -> None:
     until = now() if run_time_file else None
     number: int | None = args.number
     nvd_api_key: str | None = args.nvd_api_key or os.environ.get("NVD_API_KEY")
+
+    chunk_size: int | None = args.chunk_size
+    queue_size: int = args.queue_size
 
     if since_from_file:
         if since_from_file.exists():
@@ -366,7 +389,9 @@ async def download(console: Console, error_console: Console) -> None:
     if verbose:
         console.log(f"Using PostgreSQL database {cpe_database_name}")
 
-    cli = CPECli(console, verbose=verbose)
+    cli = CPECli(
+        console, verbose=verbose, chunk_size=chunk_size, queue_size=queue_size
+    )
 
     with Progress(console=console) as progress:
         async with (
