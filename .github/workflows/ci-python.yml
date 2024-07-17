@@ -21,7 +21,7 @@ jobs:
         uses: greenbone/actions/lint-python@v3
         with:
           packages: greenbone
-          linter: ruff
+          linter: ruff check
           python-version: ${{ matrix.python-version }}
 
   test:
