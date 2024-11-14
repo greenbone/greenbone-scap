@@ -76,6 +76,9 @@ extend-select = ["I", "PLE", "PLW"]
 greenbone-cve-download = 'greenbone.scap.cve.cli.download:main'
 greenbone-cpe-download = 'greenbone.scap.cpe.cli.download:main'
 greenbone-cpe-find = 'greenbone.scap.cpe.cli.find:main'
+greenbone-cpe-match-db-download = 'greenbone.scap.cpe_match.cli.db_download:main'
+greenbone-cpe-match-json-download = 'greenbone.scap.cpe_match.cli.json_download:main'
+greenbone-cpe-match-find = 'greenbone.scap.cpe_match.cli.find:main'
 
 [tool.mypy]
 files = "greenbone"
