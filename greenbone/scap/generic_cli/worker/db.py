@@ -2,31 +2,27 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import asyncio
 import os
-from argparse import ArgumentParser, Namespace
-from pathlib import Path
-from typing import TypeVar, Sequence, AsyncContextManager
-
 from abc import abstractmethod
+from argparse import ArgumentParser
+from typing import AsyncContextManager, Sequence, TypeVar
+
 from rich.console import Console
 from rich.progress import Progress
 
-from .base import BaseScapWorker
 from ...cli import (
-    DEFAULT_VERBOSITY,
     DEFAULT_POSTGRES_DATABASE_NAME,
     DEFAULT_POSTGRES_HOST,
     DEFAULT_POSTGRES_PORT,
     CLIError,
 )
 from ...db import PostgresDatabase
+from .base import BaseScapWorker
 
 T = TypeVar("T")
 
 
 class ScapDatabaseWriteWorker(BaseScapWorker[T]):
-
     item_type_plural = BaseScapWorker.item_type_plural
     arg_defaults = {
         "database_name": DEFAULT_POSTGRES_DATABASE_NAME,
@@ -57,10 +53,6 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
             f"\"{cls.arg_defaults['database_host']}\" if not set.",
         )
 
-        try:
-            env_database_port = int(os.environ.get("DATABASE_PORT"))
-        except ValueError:
-            env_database_port = None
         db_group.add_argument(
             "--database-port",
             help=f"Port for the {cls.item_type_plural} database. "
@@ -137,10 +129,12 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
         )
 
         if not database_user:
-            raise CLIError("Missing user for CPE database")
+            raise CLIError(f"Missing user for {self.item_type_plural} database")
 
         if not database_password:
-            raise CLIError("Missing password for CPE database")
+            raise CLIError(
+                f"Missing password for {self.item_type_plural} database"
+            )
 
         self._database = PostgresDatabase(
             user=database_user,
@@ -168,3 +162,17 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
     @abstractmethod
     def _create_manager(self) -> AsyncContextManager:
         pass
+
+    async def loop_start(self) -> None:
+        if self.verbose:
+            self.console.log("Initialized database.")
+        await super().loop_start()
+
+    async def __aenter__(self):
+        await self._database.__aenter__()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        db_ret = await self._database.__aexit__(exc_type, exc_val, exc_tb)
+        manager_ret = await self._manager.__aexit__(exc_type, exc_val, exc_tb)
+        return db_ret or manager_ret

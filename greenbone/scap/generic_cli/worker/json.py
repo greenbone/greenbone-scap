@@ -2,23 +2,21 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import asyncio
-from argparse import ArgumentParser, Namespace
+from abc import ABC
+from argparse import ArgumentParser
 from pathlib import Path
-from typing import TypeVar, Sequence, AsyncContextManager
+from typing import TypeVar
 
-from abc import abstractmethod, ABC
 from rich.console import Console
 from rich.progress import Progress
 
-from .base import BaseScapWorker
 from ...cli import DEFAULT_VERBOSITY
+from .base import BaseScapWorker
 
 T = TypeVar("T")
 
 
 class ScapJsonWriteWorker(BaseScapWorker[T], ABC):
-
     item_type_plural = BaseScapWorker.item_type_plural
     arg_defaults = {
         "storage_path": ".",
@@ -34,7 +32,7 @@ class ScapJsonWriteWorker(BaseScapWorker[T], ABC):
         parser.add_argument(
             "--storage-path",
             type=Path,
-            help=f"Directory to write the JSON to. Default: %(default)s",
+            help="Directory to write the JSON to. Default: %(default)s",
             default=cls.arg_defaults["storage_path"],
         )
         parser.add_argument(

@@ -3,18 +3,12 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 
-from datetime import date, datetime
-from enum import StrEnum
-from typing import Annotated
+from datetime import datetime
 
 from sqlalchemy import (
     DateTime,
     ForeignKey,
-    ForeignKeyConstraint,
-    String,
-    TypeDecorator,
     Uuid,
-    and_,
 )
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import (
@@ -56,7 +50,7 @@ class CPEMatchStringDatabaseModel(BaseDatabaseModel):
     version_start_excluding: Mapped[str | None]
     version_end_including: Mapped[str | None]
     version_end_excluding: Mapped[str | None]
-    matches: Mapped[list["CPEMatchModel"] | None] = relationship(
+    matches: Mapped[list["CPEMatchDatabaseModel"] | None] = relationship(
         back_populates="cpe_match_string_model"
     )
 

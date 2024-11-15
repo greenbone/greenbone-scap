@@ -2,21 +2,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from pathlib import Path
 from argparse import Namespace
+from pathlib import Path
 from typing import Sequence
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
 from rich.progress import Progress
 
+from ...generic_cli.worker.json import ScapJsonWriteWorker
 from ..cli.processor import CPE_MATCH_TYPE_PLURAL
 from ..json import MatchStringJsonManager
-from ...generic_cli.worker.json import ScapJsonWriteWorker
 
 
 class CpeMatchJsonWriteWorker(ScapJsonWriteWorker[CPEMatchString]):
-
     item_type_plural = CPE_MATCH_TYPE_PLURAL
     arg_defaults = ScapJsonWriteWorker.arg_defaults
 
@@ -28,7 +27,6 @@ class CpeMatchJsonWriteWorker(ScapJsonWriteWorker[CPEMatchString]):
         error_console: Console,
         progress: Progress,
     ) -> "CpeMatchJsonWriteWorker":
-
         return CpeMatchJsonWriteWorker(
             console,
             error_console,

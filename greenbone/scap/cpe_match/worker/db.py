@@ -2,22 +2,20 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from pathlib import Path
 from argparse import Namespace
-from typing import Sequence, AsyncContextManager
+from typing import AsyncContextManager, Sequence
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
 from rich.progress import Progress
 
-from ..cli.processor import CPE_MATCH_TYPE_PLURAL
-from ..db.manager import CPEMatchStringDatabaseManager
 from ...cli import DEFAULT_VERBOSITY
 from ...generic_cli.worker.db import ScapDatabaseWriteWorker
+from ..cli.processor import CPE_MATCH_TYPE_PLURAL
+from ..db.manager import CPEMatchStringDatabaseManager
 
 
 class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
-
     item_type_plural = CPE_MATCH_TYPE_PLURAL
     arg_defaults = ScapDatabaseWriteWorker.arg_defaults
 
@@ -33,7 +31,6 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
         error_console: Console,
         progress: Progress,
     ) -> "CpeMatchDatabaseWriteWorker":
-
         return CpeMatchDatabaseWriteWorker(
             console,
             error_console,

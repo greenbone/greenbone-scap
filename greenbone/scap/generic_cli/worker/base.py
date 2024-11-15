@@ -5,21 +5,19 @@
 import asyncio
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import Generic, TypeVar, Sequence, AsyncContextManager
+from typing import AsyncContextManager, Generic, Sequence, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress, TaskID
 
-from ..queue import ScapChunkQueue
-
 from ...cli import DEFAULT_VERBOSITY
 from ...errors import ScapError
+from ..queue import ScapChunkQueue
 
 T = TypeVar("T")
 
 
 class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
-
     item_type_plural = "SCAP items"
     arg_defaults = {
         "verbose": DEFAULT_VERBOSITY,
@@ -70,7 +68,6 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
         )
 
     async def run_loop(self) -> None:
-
         await self.loop_start()
         while self.queue.more_chunks_expected():
             try:

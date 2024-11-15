@@ -427,7 +427,8 @@ async def download(console: Console, error_console: Console) -> None:
                 # ensure directories exist
                 run_time_file.parent.mkdir(parents=True, exist_ok=True)
                 run_time_file.write_text(
-                    f"{until.isoformat()}\n", encoding="utf8"  # type: ignore
+                    f"{until.isoformat()}\n",
+                    encoding="utf8",  # type: ignore
                 )
                 console.log(f"Wrote run time to {run_time_file.absolute()}.")
 

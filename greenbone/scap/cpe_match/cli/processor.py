@@ -10,7 +10,7 @@ from rich.console import Console
 from ...cli import DEFAULT_VERBOSITY
 from ...generic_cli.processor import ScapProcessor
 from ...generic_cli.producer.base import BaseScapProducer
-from ...generic_cli.queue import DEFAULT_QUEUE_SIZE, DEFAULT_CHUNK_SIZE
+from ...generic_cli.queue import DEFAULT_QUEUE_SIZE
 from ...generic_cli.worker.base import BaseScapWorker
 
 CPE_MATCH_TYPE_PLURAL = "CPE match strings"
@@ -18,7 +18,6 @@ CPE_MATCH_DEFAULT_CHUNK_SIZE = 500
 
 
 class CpeMatchProcessor(ScapProcessor[CPEMatchString]):
-
     item_type_plural = CPE_MATCH_TYPE_PLURAL
     arg_defaults = {
         "chunk_size": CPE_MATCH_DEFAULT_CHUNK_SIZE,

@@ -14,14 +14,12 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncConnection
 from sqlalchemy.orm import selectinload
 
-from greenbone.scap.db import Database
-
 from greenbone.scap.cpe_match.db.models import (
     BaseDatabaseModel,
-    CPEMatchStringDatabaseModel,
     CPEMatchDatabaseModel,
+    CPEMatchStringDatabaseModel,
 )
-
+from greenbone.scap.db import Database
 
 DEFAULT_THRESHOLD = 100
 DEFAULT_YIELD_PER = 100

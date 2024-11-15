@@ -1,21 +1,19 @@
 # SPDX-FileCopyrightText: 2024 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
-from argparse import ArgumentParser, Namespace
+from argparse import Namespace
 
+from pontos.nvd import NVDApi, NVDResults
+from pontos.nvd.cpe_match import CPEMatchApi
+from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
 from rich.progress import Progress
 
-from pontos.nvd import NVDResults, NVDApi
-from pontos.nvd.cpe_match import CPEMatchApi
-from pontos.nvd.models.cpe_match_string import CPEMatchString
-
-from ..cli.processor import CPE_MATCH_TYPE_PLURAL
 from ...generic_cli.producer.nvd_api import NvdApiProducer
+from ..cli.processor import CPE_MATCH_TYPE_PLURAL
 
 
 class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
-
     item_type_plural = CPE_MATCH_TYPE_PLURAL
     arg_defaults = NvdApiProducer.arg_defaults
 
@@ -27,7 +25,6 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
         error_console: Console,
         progress: Progress,
     ) -> "CpeMatchNvdApiProducer":
-
         request_filter_opts = {}
 
         since = NvdApiProducer.since_from_args(args, error_console)
@@ -37,12 +34,12 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
             console,
             error_console,
             progress,
-            args.nvd_api_key,
-            verbose=args.verbose or 0,
+            nvd_api_key=args.nvd_api_key,
             retry_attempts=args.retry_attempts,
             request_results=args.number,
             request_filter_opts=request_filter_opts,
             start_index=args.start,
+            verbose=args.verbose or 0,
         )
 
     def __init__(
@@ -50,23 +47,24 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
         console: Console,
         error_console: Console,
         progress: Progress,
-        nvd_api_key: str | None = None,
         *,
-        verbose: int = None,
+        nvd_api_key: str | None = None,
         retry_attempts: int = None,
         request_results: int = None,
         request_filter_opts: dict = {},
         start_index: int = 0,
+        verbose: int = None,
     ):
         super().__init__(
             console,
             error_console,
             progress,
-            verbose=verbose,
+            nvd_api_key=nvd_api_key,
             retry_attempts=retry_attempts,
             request_results=request_results,
             request_filter_opts=request_filter_opts,
             start_index=start_index,
+            verbose=verbose,
         )
 
     def _create_nvd_api(self, nvd_api_key: str) -> NVDApi:

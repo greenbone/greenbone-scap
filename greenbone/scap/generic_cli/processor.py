@@ -1,26 +1,21 @@
 # SPDX-FileCopyrightText: 2024 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
-from abc import abstractmethod, ABC, abstractclassmethod
-from argparse import ArgumentParser, Namespace
-from typing import TypeVar, Generic, Sequence, Any
-
 import asyncio
-import shtab
+from argparse import ArgumentParser
+from typing import Generic, TypeVar
+
 from rich.console import Console
 
-from .producer.base import BaseScapProducer
-from .queue import ScapChunkQueue, DEFAULT_QUEUE_SIZE, DEFAULT_CHUNK_SIZE
-from .worker.base import BaseScapWorker
-
 from ..cli import DEFAULT_VERBOSITY
-
+from .producer.base import BaseScapProducer
+from .queue import DEFAULT_CHUNK_SIZE, DEFAULT_QUEUE_SIZE, ScapChunkQueue
+from .worker.base import BaseScapWorker
 
 T = TypeVar("T")
 
 
 class ScapProcessor(Generic[T]):
-
     item_type_plural = "SCAP items"
     arg_defaults = {
         "chunk_size": DEFAULT_CHUNK_SIZE,

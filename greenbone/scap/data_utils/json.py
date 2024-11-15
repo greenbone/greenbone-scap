@@ -120,7 +120,6 @@ class JsonEncoder(json.JSONEncoder):
 
 
 class JsonManager:
-
     def __init__(
         self,
         error_console: Console,

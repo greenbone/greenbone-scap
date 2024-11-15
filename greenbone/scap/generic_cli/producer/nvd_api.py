@@ -1,35 +1,30 @@
 # SPDX-FileCopyrightText: 2024 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
+from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
+from typing import Generic, TypeVar
 
 import httpx
 import stamina
-
-from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, AsyncContextManager
-
+from pontos.nvd import NVDApi, NVDResults
 from rich.console import Console
 from rich.progress import Progress
-
-from pontos.nvd import NVDResults, NVDApi
 
 from greenbone.scap.cli import (
     DEFAULT_RETRIES,
     DEFAULT_VERBOSITY,
 )
 
-from .base import BaseScapProducer
 from ...timer import Timer
-
+from .base import BaseScapProducer
 
 T = TypeVar("T")
 
 
 class NvdApiProducer(BaseScapProducer, Generic[T]):
-
     item_type_plural = BaseScapProducer.item_type_plural
     arg_defaults = {
         "retry_attempts": DEFAULT_RETRIES,
@@ -75,7 +70,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
             type=int,
             metavar="N",
             help="Up to N retries until giving up when HTTP requests are failing. "
-            f"Default: %(default)s",
+            "Default: %(default)s",
             default=cls.arg_defaults["retry_attempts"],
         )
         parser.add_argument(
@@ -129,6 +124,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         self.request_filter_opts: dict = request_filter_opts
         self.start_index: int = start_index
 
+        self._nvd_api_key = nvd_api_key
         self._nvd_api = self._create_nvd_api(nvd_api_key)
 
     @abstractmethod

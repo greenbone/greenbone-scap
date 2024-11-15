@@ -4,10 +4,9 @@
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
+from typing import AsyncContextManager, Generic, TypeVar
 
 from pontos.nvd import NVDResults
-from typing import Generic, TypeVar, AsyncContextManager
-
 from rich.console import Console
 from rich.progress import Progress
 
@@ -23,7 +22,6 @@ T = TypeVar("T")
 
 
 class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
-
     item_type_plural = "SCAP items"
     arg_defaults = {
         "verbose": DEFAULT_VERBOSITY,
