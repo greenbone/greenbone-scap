@@ -15,16 +15,36 @@ from ...errors import ScapError
 from ..queue import ScapChunkQueue
 
 T = TypeVar("T")
+"Generic type variable for the type of SCAP items handled"
 
 
 class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
-    item_type_plural = "SCAP items"
-    arg_defaults = {
+    """
+    Abstract async context manager base class for a worker consuming
+    SCAP items, e.g. by writing them to a file or database.
+
+    The type of the SCAP items is to be specified by the generic type,
+    e.g. `BaseScapWorker[CPE]` will be a producer handling CPE objects.
+    """
+
+    _item_type_plural = "SCAP items"
+    "Plural form of the type of items to use in log messages."
+
+    _arg_defaults = {
         "verbose": DEFAULT_VERBOSITY,
     }
+    "Default values for optional arguments."
 
     @classmethod
     def add_args_to_parser(cls, parser: ArgumentParser):
+        """
+        Class method for adding worker-specific arguments to an
+        `ArgumentParser`. Does nothing but can be overridden by
+        more specific producers.
+
+        Args:
+            parser: The parser to add the arguments to.
+        """
         pass
 
     def __init__(
@@ -35,61 +55,118 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
         *,
         verbose: int | None = None,
     ):
-        self.console: Console = console
-        self.error_console: Console = error_console
-        self.progress: Progress = progress
+        """
+        Constructor for a generic SCAP worker.
 
-        self.verbose = verbose if not None else self.arg_defaults["verbose"]
+        Args:
+            console: Console for standard output.
+            error_console: Console for error output.
+            progress: Progress bar renderer to be updated by the producer.
+            verbose: Verbosity level of log messages.
+        """
 
-        self.queue: ScapChunkQueue[T] | None = None
-        self.task: TaskID | None = None
-        self.processed: int = 0
+        self._console: Console = console
+        "Console for standard output."
+
+        self._error_console: Console = error_console
+        "Console for error output."
+
+        self._progress: Progress = progress
+        "Progress bar renderer to be updated by the producer."
+
+        self._verbose = verbose if not None else self._arg_defaults["verbose"]
+        "Verbosity level of log messages."
+
+        self._queue: ScapChunkQueue[T] | None = None
+        "Queue the worker will get chunks of SCAP items from."
+
+        self._progress_task: TaskID | None = None
+        "Progress bar TaskID tracking the progress of the worker."
+
+        self._processed: int = 0
+        "Number of SCAP items processed so far."
 
     @abstractmethod
-    async def add_chunk(self, chunk: Sequence[T]) -> None:
+    async def _handle_chunk(self, chunk: Sequence[T]) -> None:
+        """
+        Callback handling a chunk of SCAP items from the queue.
+
+        Args:
+            chunk: The last chunk fetched from the queue.
+        """
         pass
 
-    async def loop_start(self) -> None:
-        self.console.log(f"Start processing {self.item_type_plural}")
-        self.task = self.progress.add_task(
-            f"Processing {self.item_type_plural}", total=self.queue.total_items
+    async def _loop_start(self) -> None:
+        """
+        Callback handling the start of the loop fetching and processing the SCAP items.
+        """
+        self._console.log(f"Start processing {self._item_type_plural}")
+        self._progress_task = self._progress.add_task(
+            f"Processing {self._item_type_plural}",
+            total=self._queue.total_items,
         )
 
     async def loop_step_end(self) -> None:
-        if self.verbose:
-            self.console.log(
-                f"Processed {self.processed:,} of {self.queue.total_items:,} "
-                f"{self.item_type_plural}"
+        """
+        Callback handling the end of one iteration of the main worker loop.
+        """
+        if self._verbose:
+            self._console.log(
+                f"Processed {self._processed:,} of {self._queue.total_items:,} "
+                f"{self._item_type_plural}"
             )
 
     async def loop_end(self) -> None:
-        self.console.log(
-            f"Processing of {self.processed:,} {self.item_type_plural} done"
+        """
+        Callback handling the exiting the main worker loop.
+        """
+        self._console.log(
+            f"Processing of {self._processed:,} {self._item_type_plural} done"
         )
 
     async def run_loop(self) -> None:
-        await self.loop_start()
-        while self.queue.more_chunks_expected():
-            try:
-                chunk = await self.queue.get_chunk()
-                self.processed += len(chunk)
+        """
+        Runs the main loop of the worker while there are chunks expected by the queue.
 
-                if self.task is None:
+        The function will fetch chunks from the queue and handle them in the `handle_chunk`
+        callback.
+
+        It will also call `loop_step_end` after each iteration of the loop and `loop_end`
+        after exiting the loop.
+        """
+        await self._loop_start()
+        while self._queue.more_chunks_expected():
+            try:
+                chunk = await self._queue.get_chunk()
+                self._processed += len(chunk)
+
+                if self._progress_task is None:
                     raise ScapError("Worker progress task is not defined")
 
-                self.progress.update(self.task, completed=self.processed)
+                self._progress.update(
+                    self._progress_task, completed=self._processed
+                )
 
-                await self.add_chunk(chunk)
+                await self._handle_chunk(chunk)
             except asyncio.CancelledError as e:
-                if self.verbose:
-                    self.console.log("Worker has been cancelled")
+                if self._verbose:
+                    self._console.log("Worker has been cancelled")
                 raise e
 
-            self.queue.task_done()
+            self._queue.chunk_processed()
 
             await self.loop_step_end()
 
         await self.loop_end()
 
-    def set_queue(self, queue: ScapChunkQueue[T]):
-        self.queue = queue
+    def set_queue(self, queue: ScapChunkQueue[T]) -> None:
+        """
+        Assigns a SCAP chunk queue to the worker.
+
+        This will be called by the `ScapProcessor`, so the worker can be created
+        before the processor that provides the queue.
+
+        Args:
+            queue: The queue to assign.
+        """
+        self._queue = queue

@@ -6,7 +6,6 @@ from abc import ABC, abstractmethod
 from argparse import ArgumentParser
 from typing import AsyncContextManager, Generic, TypeVar
 
-from pontos.nvd import NVDResults
 from rich.console import Console
 from rich.progress import Progress
 
@@ -19,16 +18,35 @@ from ..queue import (
 )
 
 T = TypeVar("T")
+"Generic type variable for the type of SCAP items handled"
 
 
 class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
-    item_type_plural = "SCAP items"
-    arg_defaults = {
+    """
+    Abstract async context manager base class for a producer generating
+    SCAP items, e.g. by downloading from an API or querying a database.
+
+    The type of the SCAP items is to be specified by the generic type,
+    e.g. `BaseScapProducer[CPE]` will be a producer handling CPE objects.
+    """
+
+    _item_type_plural = "SCAP items"
+    "Plural form of the type of items to use in log messages"
+
+    _arg_defaults = {
         "verbose": DEFAULT_VERBOSITY,
     }
+    "Default values for optional arguments."
 
     @classmethod
-    def add_args_to_parser(cls, parser: ArgumentParser):
+    def add_args_to_parser(cls, parser: ArgumentParser) -> None:
+        """
+        Adds producer-specific arguments to an `ArgumentParser`.
+         Does nothing but can be overridden by more specific producers.
+
+        Args:
+            parser: The parser to add the arguments to.
+        """
         pass
 
     def __init__(
@@ -39,24 +57,43 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
         *,
         verbose: int | None = None,
     ):
-        self.console: Console = console
-        self.error_console: Console = error_console
-        self.progress: Progress = progress
+        """
+        Constructor for a generic SCAP producer.
 
-        self.verbose = verbose if not None else self.arg_defaults["verbose"]
+        Args:
+            console: Console for standard output.
+            error_console: Console for error output.
+            progress: Progress bar renderer to be updated by the producer.
+            verbose: Verbosity level of log messages.
+        """
 
-        self.queue: ScapChunkQueue[T] | None = None
-        self.results: NVDResults[T] | None = None
+        self._console: Console = console
+        "Console for standard output."
+
+        self._error_console: Console = error_console
+        "Console for error output."
+
+        self._progress: Progress = progress
+        "Progress bar renderer to be updated by the producer."
+
+        self._verbose = verbose if not None else self._arg_defaults["verbose"]
+        "Verbosity level of log messages."
+
+        self._queue: ScapChunkQueue[T] | None = None
+        "Queue chunks of SCAP items are added to."
 
     @abstractmethod
     async def fetch_initial_data(
         self,
     ) -> int:
         """
-        Abstract method that must set the `expected_total` in the queue
-        and ensure any remaining initializations of the data source are done,
-        so it can be queried for chunks of SCAP items by `fetch_loop`.
-        :return:
+        Ensures any remaining initializations of the data source are done,
+         so it can be queried for chunks of SCAP items by `run_loop`.
+        It must also return the expected total number of items that will be
+         fetched.
+
+        Returns:
+            The expected total number of items.
         """
         return 0
 
@@ -65,16 +102,24 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
         self,
     ) -> None:
         """
-        Abstract method that should fetch chunks of SCAP items and add them
-        to the queue.
+        Run a loop fetching chunks of SCAP items and adding them to the queue.
 
-        It must also call `set_producer_finished` before returning to signal
+        The method must also call `set_producer_finished` before returning to signal
         that no more chunks will be added to the queue.
 
         It should also create a task for the `progress` object and update it
         regularly.
         """
-        self.queue.set_producer_finished()
+        self._queue.set_producer_finished()
 
-    def set_queue(self, queue: ScapChunkQueue[T]):
-        self.queue = queue
+    def set_queue(self, queue: ScapChunkQueue[T]) -> None:
+        """
+        Assigns a SCAP chunk queue to the producer.
+
+        This will be called by the `ScapProcessor`, so the producer can be created
+        before the processor that provides the queue.
+
+        Args:
+            queue: The queue to assign.
+        """
+        self._queue = queue

@@ -16,12 +16,11 @@ from ..db.manager import CPEMatchStringDatabaseManager
 
 
 class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
-    item_type_plural = CPE_MATCH_TYPE_PLURAL
-    arg_defaults = ScapDatabaseWriteWorker.arg_defaults
+    _item_type_plural = CPE_MATCH_TYPE_PLURAL
+    "Plural form of the type of items to use in log messages."
 
-    @classmethod
-    def get_item_type_plural(cls):
-        return "CPE Match Strings"
+    _arg_defaults = ScapDatabaseWriteWorker.arg_defaults
+    "Default values for optional arguments."
 
     @classmethod
     def from_args(
@@ -31,6 +30,19 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
         error_console: Console,
         progress: Progress,
     ) -> "CpeMatchDatabaseWriteWorker":
+        """
+        Create a new `CpeMatchDatabaseWriteWorker` with parameters from
+         the given command line args gathered by an `ArgumentParser`.
+
+        Args:
+            args: Command line arguments to use
+            console: Console for standard output.
+            error_console: Console for error output.
+            progress: Progress bar renderer to be updated by the worker.
+
+        Returns:
+            The new `CpeMatchDatabaseWriteWorker`.
+        """
         return CpeMatchDatabaseWriteWorker(
             console,
             error_console,
@@ -60,6 +72,26 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
         echo_sql: bool = False,
         verbose: int = DEFAULT_VERBOSITY,
     ):
+        """
+        Constructor for a CPE match string database write worker.
+
+        If the `database_...` arguments are None or not given, corresponding
+        environment variables will be tried next before finally using the
+        defaults as a fallback.
+
+        Args:
+            console: Console for standard output.
+            error_console: Console for error output.
+            progress: Progress bar renderer to be updated by the producer.
+            database_name: Name of the database to use.
+            database_schema: Optional database schema to use.
+            database_host: IP address or hostname of the database server to use.
+            database_port: Port of the database server to use.
+            database_user: Name of the database user to use.
+            database_password: Password of the database user to use.
+            echo_sql: Whether to print SQL statements.
+            verbose: Verbosity level of log messages.
+        """
         super().__init__(
             console,
             error_console,
@@ -74,8 +106,21 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
             verbose=verbose,
         )
 
-    async def add_chunk(self, chunk: Sequence[CPEMatchString]):
+    async def _handle_chunk(self, chunk: Sequence[CPEMatchString]):
+        """
+        Handles a chunk of CPE match strings from the queue.
+
+        Adds the match strings to the database using the manager.
+
+        Args:
+            chunk: The last chunk fetched from the queue.
+        """
         await self._manager.add_cpe_match_strings(chunk)
 
     def _create_manager(self) -> AsyncContextManager:
+        """
+        Callback creating a new database manager for handling SCAP items.
+
+        Returns: The new database manager.
+        """
         return CPEMatchStringDatabaseManager(self._database)

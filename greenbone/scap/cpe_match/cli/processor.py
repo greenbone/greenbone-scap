@@ -18,8 +18,13 @@ CPE_MATCH_DEFAULT_CHUNK_SIZE = 500
 
 
 class CpeMatchProcessor(ScapProcessor[CPEMatchString]):
-    item_type_plural = CPE_MATCH_TYPE_PLURAL
-    arg_defaults = {
+    """
+    Class that handles a producer object generating CPE match strings
+    to be processed by a worker object.
+    """
+
+    _item_type_plural = CPE_MATCH_TYPE_PLURAL
+    _arg_defaults = {
         "chunk_size": CPE_MATCH_DEFAULT_CHUNK_SIZE,
         "queue_size": DEFAULT_QUEUE_SIZE,
         "verbose": DEFAULT_VERBOSITY,
@@ -33,6 +38,19 @@ class CpeMatchProcessor(ScapProcessor[CPEMatchString]):
         producer: BaseScapProducer,
         worker: BaseScapWorker,
     ) -> "CpeMatchProcessor":
+        """
+        Create a new `CPEMatchNvdApiProducer` with parameters from
+         the given command line args gathered by an `ArgumentParser`.
+
+        Args:
+            args: Command line arguments to use
+            console: Console for standard output.
+            error_console: Console for error output.
+            producer: The producer generating the CPE match strings.
+            worker: The worker processing the CPE match strings.
+        Returns:
+            The new `CpeMatchProcessor`.
+        """
         return CpeMatchProcessor(
             console,
             error_console,
@@ -54,6 +72,18 @@ class CpeMatchProcessor(ScapProcessor[CPEMatchString]):
         chunk_size: int | None = None,
         verbose: int | None = None,
     ):
+        """
+        Constructor for a new CPE match string processor.
+
+        Args:
+            console: Console for standard output.
+            error_console: Console for error output.
+            producer: The producer generating the CPE match strings.
+            worker: The worker processing the CPE match strings.
+            queue_size: The number of chunks allowed in the queue.
+            chunk_size: The expected maximum number of CPE match strings per chunk.
+            verbose: Verbosity level of log messages.
+        """
         super().__init__(
             console,
             error_console,
