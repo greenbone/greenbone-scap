@@ -19,7 +19,7 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
     _item_type_plural = CPE_MATCH_TYPE_PLURAL
     "Plural form of the type of items to use in log messages."
 
-    _arg_defaults = ScapDatabaseWriteWorker.arg_defaults
+    _arg_defaults = ScapDatabaseWriteWorker._arg_defaults
     "Default values for optional arguments."
 
     @classmethod

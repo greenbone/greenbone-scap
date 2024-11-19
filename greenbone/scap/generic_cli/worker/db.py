@@ -14,6 +14,7 @@ from ...cli import (
     DEFAULT_POSTGRES_DATABASE_NAME,
     DEFAULT_POSTGRES_HOST,
     DEFAULT_POSTGRES_PORT,
+    DEFAULT_VERBOSITY,
     CLIError,
 )
 from ...db import PostgresDatabase
@@ -45,12 +46,16 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
     """
 
     _item_type_plural = BaseScapWorker._item_type_plural
+    "Plural form of the type of items to use in log messages."
+
     _arg_defaults = {
         "database_name": DEFAULT_POSTGRES_DATABASE_NAME,
         "database_host": DEFAULT_POSTGRES_HOST,
         "database_port": DEFAULT_POSTGRES_PORT,
         "database_schema": None,
+        "verbose": DEFAULT_VERBOSITY,
     }
+    "Default values for optional arguments."
 
     @classmethod
     def add_args_to_parser(
@@ -232,6 +237,7 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
 
     async def __aenter__(self):
         await self._database.__aenter__()
+        await self._manager.__aenter__()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
