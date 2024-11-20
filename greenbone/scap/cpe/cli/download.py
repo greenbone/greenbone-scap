@@ -424,10 +424,14 @@ async def download(console: Console, error_console: Console) -> None:
             )
 
             if run_time_file:
+                if until:
+                    run_time = until
+                else:
+                    run_time = datetime.now()
                 # ensure directories exist
                 run_time_file.parent.mkdir(parents=True, exist_ok=True)
                 run_time_file.write_text(
-                    f"{until.isoformat()}\n",
+                    f"{run_time.isoformat()}\n",
                     encoding="utf8",  # type: ignore
                 )
                 console.log(f"Wrote run time to {run_time_file.absolute()}.")

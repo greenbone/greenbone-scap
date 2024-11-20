@@ -5,7 +5,7 @@ from abc import abstractmethod
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 import httpx
 import stamina
@@ -98,7 +98,9 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         )
 
     @staticmethod
-    def since_from_args(args: Namespace, error_console: Console) -> datetime:
+    def since_from_args(
+        args: Namespace, error_console: Console
+    ) -> datetime | None:
         """
         Gets the lower limit for the modification time from the given
          command line arguments, reading the time from a file if the
@@ -133,8 +135,8 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         error_console: Console,
         progress: Progress,
         *,
+        retry_attempts: int = DEFAULT_RETRIES,
         nvd_api_key: str | None = None,
-        retry_attempts: int,
         request_results: int | None = None,
         request_filter_opts: dict = {},
         start_index: int = 0,
@@ -167,26 +169,26 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         self._additional_retry_attempts: int = retry_attempts
         "Number of retries after fetching initial data."
 
-        self._request_results: int = request_results
+        self._request_results: int | None = request_results
         "Maximum number of results to request from the API."
 
-        self._request_filter_opts: dict = request_filter_opts
+        self._request_filter_opts: dict[str, Any] = request_filter_opts
         "Filter options to pass to the API requests."
 
         self._start_index: int = start_index
         "Index/offset of the first item to request."
 
-        self._nvd_api_key = nvd_api_key
+        self._nvd_api_key: str | None = nvd_api_key
         "API key to use for the requests to allow faster requests."
 
-        self._nvd_api = self._create_nvd_api(nvd_api_key)
+        self._nvd_api: NVDApi = self._create_nvd_api(nvd_api_key)
         "The NVD API object used for querying SCAP items."
 
-        self._results = None
+        self._results: NVDResults[T]
         "The NVD results object created by the API to get the SCAP items from."
 
     @abstractmethod
-    def _create_nvd_api(self, nvd_api_key: str) -> NVDApi:
+    def _create_nvd_api(self, nvd_api_key: str | None) -> NVDApi:
         """
         Callback used by the constructor to create the
          NVD API object that can be queried for SCAP items.
@@ -199,7 +201,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         pass
 
     @abstractmethod
-    def _create_nvd_results(self) -> NVDResults[T]:
+    async def _create_nvd_results(self) -> NVDResults[T]:
         """
         Callback used during `fetch_initial_data` to get
          the `NVDResults` object the SCAP items will be fetched from.

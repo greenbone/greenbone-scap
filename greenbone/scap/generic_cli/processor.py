@@ -118,7 +118,7 @@ class ScapProcessor(Generic[T]):
         self._worker.set_queue(self._queue)
 
         self._verbose: int = (
-            verbose if not None else self._arg_defaults["verbose"],
+            verbose if verbose is not None else self._arg_defaults["verbose"]
         )
         "Verbosity level of log messages."
 

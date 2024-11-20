@@ -9,6 +9,8 @@ from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
 from rich.progress import Progress
 
+from ...cli import DEFAULT_RETRIES
+from ...errors import ScapError
 from ...generic_cli.producer.nvd_api import NvdApiProducer
 from ..cli.processor import CPE_MATCH_TYPE_PLURAL
 
@@ -69,12 +71,12 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
         error_console: Console,
         progress: Progress,
         *,
+        retry_attempts: int = DEFAULT_RETRIES,
         nvd_api_key: str | None = None,
-        retry_attempts: int = None,
-        request_results: int = None,
+        request_results: int | None = None,
         request_filter_opts: dict = {},
         start_index: int = 0,
-        verbose: int = None,
+        verbose: int | None = None,
     ):
         """
         Constructor for a CPE match string NVD API producer.
@@ -90,19 +92,21 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
             start_index: index/offset of the first item to request
             verbose: Verbosity level of log messages.
         """
+        self._nvd_api: CPEMatchApi
+
         super().__init__(
             console,
             error_console,
             progress,
-            nvd_api_key=nvd_api_key,
             retry_attempts=retry_attempts,
+            nvd_api_key=nvd_api_key,
             request_results=request_results,
             request_filter_opts=request_filter_opts,
             start_index=start_index,
             verbose=verbose,
         )
 
-    def _create_nvd_api(self, nvd_api_key: str) -> CPEMatchApi:
+    def _create_nvd_api(self, nvd_api_key: str | None) -> CPEMatchApi:
         """
         Callback used by the constructor to create the NVD API object
         that can be queried for CPE match strings.
@@ -123,6 +127,9 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
 
         Returns: The new `NVDResults` object.
         """
+        if self._queue is None:
+            raise ScapError("No queue has been assigned")
+
         return await self._nvd_api.cpe_matches(
             last_modified_start_date=self._request_filter_opts.get(
                 "last_modified_start_date"

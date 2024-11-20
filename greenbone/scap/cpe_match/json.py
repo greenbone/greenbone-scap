@@ -7,6 +7,7 @@ import json
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Sequence
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
@@ -65,7 +66,7 @@ class MatchStringJsonManager(JsonManager):
         storage_path: Path,
         *,
         compress: bool = False,
-        schema_path: Path = None,
+        schema_path: Path | None = None,
         raise_error_on_validation=False,
     ):
         super().__init__(
@@ -88,7 +89,9 @@ class MatchStringJsonManager(JsonManager):
             MatchStringItem(match_string=match_string)
         )
 
-    def add_match_strings(self, match_strings: list[CPEMatchString]) -> None:
+    def add_match_strings(
+        self, match_strings: Sequence[CPEMatchString]
+    ) -> None:
         for match_string in match_strings:
             self.add_match_string(match_string)
 

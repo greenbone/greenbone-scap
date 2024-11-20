@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import AsyncContextManager, Generic, TypeVar
+from typing import Any, AsyncContextManager, Generic, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress
@@ -30,10 +30,10 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
     e.g. `BaseScapProducer[CPE]` will be a producer handling CPE objects.
     """
 
-    _item_type_plural = "SCAP items"
+    _item_type_plural: str = "SCAP items"
     "Plural form of the type of items to use in log messages"
 
-    _arg_defaults = {
+    _arg_defaults: dict[str, Any] = {
         "verbose": DEFAULT_VERBOSITY,
     }
     "Default values for optional arguments."
@@ -79,7 +79,7 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
         self._verbose = verbose if not None else self._arg_defaults["verbose"]
         "Verbosity level of log messages."
 
-        self._queue: ScapChunkQueue[T] | None = None
+        self._queue: ScapChunkQueue[T]
         "Queue chunks of SCAP items are added to."
 
     @abstractmethod
@@ -110,7 +110,7 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
         It should also create a task for the `progress` object and update it
         regularly.
         """
-        self._queue.set_producer_finished()
+        pass
 
     def set_queue(self, queue: ScapChunkQueue[T]) -> None:
         """

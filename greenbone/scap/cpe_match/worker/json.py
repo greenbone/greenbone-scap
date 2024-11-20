@@ -111,11 +111,11 @@ class CpeMatchJsonWriteWorker(ScapJsonWriteWorker[CPEMatchString]):
         """
         self._json_manager.add_match_strings(chunk)
 
-    async def loop_end(self) -> None:
+    async def _loop_end(self) -> None:
         """
         Callback handling the exiting the main worker loop.
 
         Makes the JSON manager write the document to the file.
         """
         self._json_manager.write()
-        await super().loop_end()
+        await super()._loop_end()

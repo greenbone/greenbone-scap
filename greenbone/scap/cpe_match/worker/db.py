@@ -92,6 +92,8 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
             echo_sql: Whether to print SQL statements.
             verbose: Verbosity level of log messages.
         """
+        self._manager: CPEMatchStringDatabaseManager
+
         super().__init__(
             console,
             error_console,

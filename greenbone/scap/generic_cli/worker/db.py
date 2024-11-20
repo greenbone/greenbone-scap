@@ -5,7 +5,7 @@
 import os
 from abc import abstractmethod
 from argparse import ArgumentParser
-from typing import AsyncContextManager, Sequence, TypeVar
+from typing import AsyncContextManager, Sequence, Type, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress
@@ -59,7 +59,7 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
 
     @classmethod
     def add_args_to_parser(
-        cls: type,
+        cls: Type["ScapDatabaseWriteWorker"],
         parser: ArgumentParser,
     ):
         """
@@ -168,7 +168,8 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
             or self._arg_defaults["database_host"]
         )
         try:
-            env_database_port = int(os.environ.get("DATABASE_PORT"))
+            port_str = os.environ.get("DATABASE_PORT")
+            env_database_port = int(port_str) if port_str else None
         except TypeError:
             env_database_port = None
         database_port = (
@@ -182,11 +183,13 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
         )
 
         if not database_user:
-            raise CLIError(f"Missing user for {self.item_type_plural} database")
+            raise CLIError(
+                f"Missing user for {self._item_type_plural} database"
+            )
 
         if not database_password:
             raise CLIError(
-                f"Missing password for {self.item_type_plural} database"
+                f"Missing password for {self._item_type_plural} database"
             )
 
         self._database = PostgresDatabase(

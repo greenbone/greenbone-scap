@@ -5,7 +5,7 @@
 from abc import ABC
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import TypeVar
+from typing import Type, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress
@@ -38,7 +38,7 @@ class ScapJsonWriteWorker(BaseScapWorker[T], ABC):
 
     @classmethod
     def add_args_to_parser(
-        cls: type,
+        cls: Type["ScapJsonWriteWorker"],
         parser: ArgumentParser,
     ):
         """

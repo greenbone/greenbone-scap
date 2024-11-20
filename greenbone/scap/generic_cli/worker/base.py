@@ -5,7 +5,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import AsyncContextManager, Generic, Sequence, TypeVar
+from typing import Any, AsyncContextManager, Generic, Sequence, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress, TaskID
@@ -27,10 +27,10 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
     e.g. `BaseScapWorker[CPE]` will be a producer handling CPE objects.
     """
 
-    _item_type_plural = "SCAP items"
+    _item_type_plural: str = "SCAP items"
     "Plural form of the type of items to use in log messages."
 
-    _arg_defaults = {
+    _arg_defaults: dict[str, Any] = {
         "verbose": DEFAULT_VERBOSITY,
     }
     "Default values for optional arguments."
@@ -77,7 +77,7 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
         self._verbose = verbose if not None else self._arg_defaults["verbose"]
         "Verbosity level of log messages."
 
-        self._queue: ScapChunkQueue[T] | None = None
+        self._queue: ScapChunkQueue[T]
         "Queue the worker will get chunks of SCAP items from."
 
         self._progress_task: TaskID | None = None
@@ -106,7 +106,7 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
             total=self._queue.total_items,
         )
 
-    async def loop_step_end(self) -> None:
+    async def _loop_step_end(self) -> None:
         """
         Callback handling the end of one iteration of the main worker loop.
         """
@@ -116,7 +116,7 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
                 f"{self._item_type_plural}"
             )
 
-    async def loop_end(self) -> None:
+    async def _loop_end(self) -> None:
         """
         Callback handling the exiting the main worker loop.
         """
@@ -134,6 +134,9 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
         It will also call `loop_step_end` after each iteration of the loop and `loop_end`
         after exiting the loop.
         """
+        if self._queue is None:
+            raise ScapError("No queue has been assigned")
+
         await self._loop_start()
         while self._queue.more_chunks_expected():
             try:
@@ -155,9 +158,9 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
 
             self._queue.chunk_processed()
 
-            await self.loop_step_end()
+            await self._loop_step_end()
 
-        await self.loop_end()
+        await self._loop_end()
 
     def set_queue(self, queue: ScapChunkQueue[T]) -> None:
         """

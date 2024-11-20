@@ -123,7 +123,7 @@ class JsonManager:
     def __init__(
         self,
         error_console: Console,
-        schema_path: Path = None,
+        schema_path: Path | None = None,
         raise_error_on_validation=False,
     ):
         """

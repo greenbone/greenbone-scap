@@ -107,7 +107,7 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
             )
             await self._insert_foreign_data(transaction, match_strings)
 
-        self._cpes = []
+        self._cpe_match_strings = []
 
     async def _insert_foreign_data(
         self,
@@ -150,8 +150,8 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
         index: int | None = None,
         last_modification_start_date: datetime | None = None,
         last_modification_end_date: datetime | None = None,
-        published_start_date: datetime | None = None,
-        published_end_date: datetime | None = None,
+        created_start_date: datetime | None = None,
+        created_end_date: datetime | None = None,
     ) -> AsyncIterator[CPEMatchStringDatabaseModel]:
         clauses = []
 
@@ -171,13 +171,13 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
                 CPEMatchStringDatabaseModel.last_modified
                 <= last_modification_end_date
             )
-        if published_start_date:
+        if created_start_date:
             clauses.append(
-                CPEMatchStringDatabaseModel.published >= published_start_date
+                CPEMatchStringDatabaseModel.created >= created_start_date
             )
-        if published_end_date:
+        if created_end_date:
             clauses.append(
-                CPEMatchStringDatabaseModel.published <= published_end_date
+                CPEMatchStringDatabaseModel.created <= created_end_date
             )
 
         statement = (
@@ -221,8 +221,8 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
         match_criteria_id: str | None,
         last_modification_start_date: datetime | None = None,
         last_modification_end_date: datetime | None = None,
-        published_start_date: datetime | None = None,
-        published_end_date: datetime | None = None,
+        created_start_date: datetime | None = None,
+        created_end_date: datetime | None = None,
     ) -> int:
         clauses = []
 
@@ -242,13 +242,13 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
                 CPEMatchStringDatabaseModel.last_modified
                 <= last_modification_end_date
             )
-        if published_start_date:
+        if created_start_date:
             clauses.append(
-                CPEMatchStringDatabaseModel.published >= published_start_date
+                CPEMatchStringDatabaseModel.created >= created_start_date
             )
-        if published_end_date:
+        if created_end_date:
             clauses.append(
-                CPEMatchStringDatabaseModel.published <= published_end_date
+                CPEMatchStringDatabaseModel.created <= created_end_date
             )
 
         statement = select(
