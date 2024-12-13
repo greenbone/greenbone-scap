@@ -31,6 +31,7 @@ sqlalchemy = { extras = ["asyncio"], version = ">=2.0.28" }
 stamina = ">=23.2.0"
 psycopg = ">=3.1.13"
 pontos = ">=23.12.4"
+fastjsonschema = ">=2.21.1"
 
 [tool.poetry.group.dev.dependencies]
 autohooks-plugin-black = ">=23.10.0"
