@@ -63,7 +63,7 @@ class ScapProcessor(Generic[T]):
             "Default: %(default)s.",
             type=int,
             metavar="N",
-            default=cls._arg_defaults["chunk_size"],
+            default=cls._arg_defaults["queue_size"],
         )
         parser.add_argument(
             "-v",
