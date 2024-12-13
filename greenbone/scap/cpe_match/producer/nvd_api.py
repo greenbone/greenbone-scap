@@ -51,7 +51,8 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
         request_filter_opts = {}
 
         since = NvdApiProducer.since_from_args(args, error_console)
-        request_filter_opts["last_modified_start_date"] = since
+        if since is not None:
+            request_filter_opts["last_modified_start_date"] = since
 
         return CpeMatchNvdApiProducer(
             console,
