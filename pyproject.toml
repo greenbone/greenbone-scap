@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "greenbone-scap"
-version = "0.2.2.dev1"
+version = "0.3.0"
 description = "Python library for downloading CVE and CPE from NIST NVD"
 authors = ["Greenbone <info@greenbone.net>"]
 license = "GPL-3.0-or-later"
