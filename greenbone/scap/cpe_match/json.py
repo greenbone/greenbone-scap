@@ -95,7 +95,7 @@ class MatchStringJsonManager(JsonManager):
         for match_string in match_strings:
             self.add_match_string(match_string)
 
-    def write(self) -> None:
+    def write(self, file_name: str = "nvd_cpe_matches") -> None:
         """
         Write the CPE data to JSON files with optional compression in the specified folder.
         """
@@ -110,11 +110,11 @@ class MatchStringJsonManager(JsonManager):
         json_data = json.dumps(
             asdict(self._match_string_response), cls=JsonEncoder, indent=1
         )
-        self._validate_json("nvd-cpe-matches", json_data)
+        self._validate_json(file_name, json_data)
 
         if self._compress:
-            path = self._storage_path / "nvd-cpe-matches.json.gz"
+            path = self._storage_path / f"{file_name}.json.gz"
             path.write_bytes(gzip.compress(json_data.encode("utf-8")))
         else:
-            path = self._storage_path / "nvd-cpe-matches.json"
+            path = self._storage_path / f"{file_name}.json"
             path.write_bytes(json_data.encode("utf-8"))

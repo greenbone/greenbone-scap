@@ -9,10 +9,10 @@ from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
 from rich.progress import Progress
 
-from ...cli import DEFAULT_RETRIES
-from ...errors import ScapError
-from ...generic_cli.producer.nvd_api import NvdApiProducer
-from ..cli.processor import CPE_MATCH_TYPE_PLURAL
+from greenbone.scap.cli import DEFAULT_RETRIES
+from greenbone.scap.errors import ScapError
+from greenbone.scap.generic_cli.producer.nvd_api import NvdApiProducer
+from greenbone.scap.cpe_match.cli.processor import CPE_MATCH_TYPE_PLURAL
 
 
 class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
