@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import gzip
-import json
+from array import array
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +15,7 @@ from rich.console import Console
 from greenbone.scap.data_utils.json import (
     JsonEncoder,
     JsonManager,
+    convert_keys_to_camel,
 )
 
 
@@ -107,14 +108,20 @@ class MatchStringJsonManager(JsonManager):
             self._match_string_response.match_strings
         )
 
-        json_data = json.dumps(
-            asdict(self._match_string_response), cls=JsonEncoder, indent=1
-        )
+        encoder = JsonEncoder(indent=1)
+        char_array = array("b")
+
+        response_dict = asdict(self._match_string_response)
+        convert_keys_to_camel(response_dict)
+        for chunk in encoder.iterencode(response_dict):
+            char_array.frombytes(chunk.encode("utf-8"))
+        json_data = char_array.tobytes()
+
         self._validate_json(file_name, json_data)
 
         if self._compress:
             path = self._storage_path / f"{file_name}.json.gz"
-            path.write_bytes(gzip.compress(json_data.encode("utf-8")))
+            path.write_bytes(gzip.compress(json_data))
         else:
             path = self._storage_path / f"{file_name}.json"
-            path.write_bytes(json_data.encode("utf-8"))
+            path.write_bytes(json_data)
