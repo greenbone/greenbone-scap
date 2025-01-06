@@ -17,6 +17,44 @@ UUID_PATTERN = re.compile(
 )
 
 
+def _snake_to_camel(snake_str: str) -> str:
+    """
+    Convert a snake_case string to camelCase.
+
+    Args:
+        snake_str: The snake_case string to convert.
+
+    Returns:
+        The camelCase version of the input string.
+    """
+    components = snake_str.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
+def convert_keys_to_camel(obj: Any) -> Any:
+    """
+    Recursively converts all dictionary keys of an object from snake_case to camelCase
+    and excludes all None/null values, modifying the object in place.
+
+    Args:
+        obj: The object to convert, which can be a dictionary, list, or other type.
+    """
+
+    if isinstance(obj, dict):
+        old_keys = set(obj.keys())
+        for old_key in old_keys:
+            v = obj[old_key]
+            convert_keys_to_camel(v)
+            # Exclude None values
+            if v is not None:
+                new_key = _snake_to_camel(old_key)
+                obj[new_key] = v
+            del obj[old_key]
+    elif isinstance(obj, list):
+        for item in obj:
+            convert_keys_to_camel(item)
+
+
 def _custom_uuid_validate(value):
     """
     Validate whether the given value matches a UUID pattern.
@@ -34,48 +72,8 @@ def _custom_uuid_validate(value):
 
 class JsonEncoder(json.JSONEncoder):
     """
-    A custom JSON encoder that converts dictionary keys from snake_case to camelCase
-    and serializes datetime and date objects to ISO format.
+    A custom JSON encoder that serializes datetime and date objects to ISO format.
     """
-
-    def _snake_to_camel(self, snake_str: str) -> str:
-        """
-        Convert a snake_case string to camelCase.
-
-        Args:
-            snake_str: The snake_case string to convert.
-
-        Returns:
-            The camelCase version of the input string.
-        """
-        components = snake_str.split("_")
-        return components[0] + "".join(x.title() for x in components[1:])
-
-    def _convert_keys_to_camel(self, obj: Any) -> Any:
-        """
-        Recursively convert all dictionary keys in an object from snake_case to camelCase
-        and exclude all None/null values.
-
-        Args:
-            obj: The object to convert, which can be a dictionary, list, or other type.
-
-        Returns:
-            The converted object with camelCase keys.
-        """
-
-        if isinstance(obj, dict):
-            new_obj = {}
-            for k, v in obj.items():
-                # Exclude None values
-                new_v = self._convert_keys_to_camel(v)
-                if new_v is not None:
-                    new_key = self._snake_to_camel(k)
-                    new_obj[new_key] = new_v
-            return new_obj
-        elif isinstance(obj, list):
-            return [self._convert_keys_to_camel(item) for item in obj]
-        else:
-            return obj
 
     def default(self, obj: Any) -> Any:
         """
@@ -104,7 +102,7 @@ class JsonEncoder(json.JSONEncoder):
 
         return super().default(obj)
 
-    def encode(self, obj: Any) -> Any:
+    def iterencode(self, obj: Any, _one_shot: bool = False) -> Any:
         """
         Encode an object to JSON format, converting keys to camelCase.
 
@@ -112,11 +110,10 @@ class JsonEncoder(json.JSONEncoder):
             obj: The object to encode.
 
         Returns:
-            The JSON-encoded string with camelCase keys.
+            The JSON-encoded string with converted date and datetime objects.
         """
 
-        camel_case_obj = self._convert_keys_to_camel(obj)
-        return super().encode(camel_case_obj)
+        return super().iterencode(obj, _one_shot)
 
 
 class JsonManager:
@@ -160,7 +157,7 @@ class JsonManager:
         )
         self._raise_error_on_validation = raise_error_on_validation
 
-    def _validate_json(self, name: str, data: str) -> None:
+    def _validate_json(self, name: str, data: str | bytes) -> None:
         """
         Validates JSON data against a predefined schema.
 
@@ -179,7 +176,10 @@ class JsonManager:
             return
 
         try:
-            self.validate(json.loads(data))
+            if isinstance(data, bytes):
+                self.validate(json.loads(data).decode("utf-8"))
+            else:
+                self.validate(json.loads(data))
         except fastjsonschema.JsonSchemaException as e:
             msg = (
                 f"JSON file {name} is invalid."
