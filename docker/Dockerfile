@@ -48,7 +48,11 @@ RUN mkdir -p /etc/bash_completion.d && \
     greenbone-cpe-download --print-completion bash > /etc/bash_completion.d/greenbone-cpe-download-complete.bash && \
     echo "source /etc/bash_completion.d/greenbone-cpe-download-complete.bash" >> /etc/bash.bashrc && \
     greenbone-cpe-find --print-completion bash > /etc/bash_completion.d/greenbone-cpe-find-complete.bash && \
-    echo "source /etc/bash_completion.d/greenbone-cpe-find-complete.bash" >> /etc/bash.bashrc
+    echo "source /etc/bash_completion.d/greenbone-cpe-find-complete.bash" >> /etc/bash.bashrc && \
+    greenbone-cpe-match-db-download --print-completion bash > /etc/bash_completion.d/greenbone-cpe-match-db-download.bash && \
+    echo "source /etc/bash_completion.d/greenbone-cpe-match-db-download.bash" >> /etc/bash.bashrc && \
+    greenbone-cpe-match-json-download --print-completion bash > /etc/bash_completion.d/greenbone-cpe-match-json-download.bash && \
+    echo "source /etc/bash_completion.d/greenbone-cpe-match-json-download.bash" >> /etc/bash.bashrc
 
 RUN chown -R greenbone:greenbone /greenbone-scap && \
     chmod 755 /usr/local/bin/entrypoint
