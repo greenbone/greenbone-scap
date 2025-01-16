@@ -110,7 +110,7 @@ class MatchStringJsonManager(JsonManager):
             if validation_buffer is not None:
                 validation_buffer.extend(chunk.encode("utf-8"))
 
-    def write(self, file_name: str = "nvd_cpe_matches") -> None:
+    def write(self, file_name: str = "nvd-cpe-matches") -> None:
         """
         Write the CPE data to JSON files with optional compression in the specified folder.
         """

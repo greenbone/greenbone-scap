@@ -162,7 +162,7 @@ class WriteTestCase(unittest.IsolatedAsyncioTestCase):
             async with asyncio.timeout(10):
                 await processor.run()
 
-            temp_file_path: Path = temp_storage_path / "nvd_cpe_matches.json"
+            temp_file_path: Path = temp_storage_path / "nvd-cpe-matches.json"
             self.assertTrue(temp_file_path.exists())
             with open(temp_file_path) as fp:
                 parsed_json = json.load(fp)
@@ -215,7 +215,7 @@ class WriteTestCase(unittest.IsolatedAsyncioTestCase):
             async with asyncio.timeout(10):
                 await processor.run()
 
-            temp_file_path: Path = temp_storage_path / "nvd_cpe_matches.json"
+            temp_file_path: Path = temp_storage_path / "nvd-cpe-matches.json"
             self.assertTrue(temp_file_path.exists())
             with open(temp_file_path) as fp:
                 parsed_json = json.load(fp)
