@@ -4,6 +4,7 @@
 
 [![GitHub releases](https://img.shields.io/github/release/greenbone/greenbone-scap.svg)](https://github.com/greenbone/greenbone-scap/releases)
 [![PyPI release](https://img.shields.io/pypi/v/greenbone-scap.svg)](https://pypi.org/project/greenbone-scap/)
+[![codecov](https://codecov.io/github/greenbone/greenbone-scap/graph/badge.svg?token=wsPeLRsMJI)](https://codecov.io/github/greenbone/greenbone-scap)
 [![Build and test](https://github.com/greenbone/greenbone-scap/actions/workflows/ci-python.yml/badge.svg)](https://github.com/greenbone/greenbone-scap/actions/workflows/ci-python.yml)
 
 The **greenbone-scap** Python package is a collection of utilities and tools to
