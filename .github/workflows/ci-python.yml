@@ -41,6 +41,22 @@ jobs:
       - name: Run unit tests
         run: poetry run python -m unittest
 
+  coverage:
+    name: Run all tests
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        python-version:
+          - "3.11"
+          - "3.12"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install python, poetry and dependencies
+        uses: greenbone/actions/coverage-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
   mypy:
     name: Check type hints
     runs-on: "ubuntu-latest"
