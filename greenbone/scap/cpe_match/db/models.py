@@ -43,7 +43,7 @@ class CPEMatchStringDatabaseModel(BaseDatabaseModel):
     )
     criteria: Mapped[str]
     status: Mapped[str]
-    cpe_last_modified: Mapped[datetime]
+    cpe_last_modified: Mapped[datetime | None]
     created: Mapped[datetime]
     last_modified: Mapped[datetime]
     version_start_including: Mapped[str | None]
