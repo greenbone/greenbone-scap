@@ -136,7 +136,7 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
                 "last_modified_start_date"
             ),
             last_modified_end_date=self._request_filter_opts.get(
-                "last_modified_start_date"
+                "last_modified_end_date"
             ),
             cve_id=self._request_filter_opts.get("cve_id"),
             match_string_search=self._request_filter_opts.get(
