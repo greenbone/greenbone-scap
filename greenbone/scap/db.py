@@ -4,6 +4,7 @@
 
 from types import TracebackType
 from typing import Any, AsyncContextManager, Callable, Literal, Self
+from urllib.parse import quote_plus
 
 from sqlalchemy.dialects.postgresql import Insert as PostgresInsert
 from sqlalchemy.dialects.sqlite import Insert as SqliteInsert
@@ -74,7 +75,7 @@ class PostgresDatabase(Database):
     ) -> None:
         engine = create_async_engine(
             "postgresql+psycopg_async://"
-            f"{user}:{password}@{host}:{port}/{dbname}",
+            f"{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{dbname}",
             echo=echo,
             pool_size=DEFAULT_CONNECTIONS,
             max_overflow=MAX_CONNECTIONS - DEFAULT_CONNECTIONS,
