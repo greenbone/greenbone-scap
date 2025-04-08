@@ -400,12 +400,15 @@ async def download(console: Console, error_console: Console):
         console, verbose=verbose, chunk_size=chunk_size, queue_size=queue_size
     )
 
+    run_time = datetime.now()
+
     with Progress(console=console) as progress:
         async with (
             cve_database,
             CVEApi(token=nvd_api_key) as api,
             CVEManager(cve_database) as cve_manager,
         ):
+
             if verbose:
                 console.log("Initialized databases.")
 
@@ -434,8 +437,6 @@ async def download(console: Console, error_console: Console):
         if run_time_file:
             if until:
                 run_time = until
-            else:
-                run_time = datetime.now()
             # ensure directories exist
             run_time_file.parent.mkdir(parents=True, exist_ok=True)
             run_time_file.write_text(
