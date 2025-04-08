@@ -183,14 +183,14 @@ class CVECli:
             try:
                 cves = await self.queue.get()
 
-                processed += len(cves)
-                progress.update(task, completed=processed)
-
                 await manager.add_cves(cves)
 
                 self.cves_to_update.update((cve.id for cve in cves))
 
                 self.queue.task_done()
+
+                processed += len(cves)
+                progress.update(task, completed=processed)
 
                 self.console.log(f"Processed {processed:,} CVEs")
             except asyncio.CancelledError as e:
