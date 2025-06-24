@@ -9,7 +9,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Sequence
 
-import httpx
 import shtab
 import stamina
 from pontos.nvd import now
@@ -29,6 +28,7 @@ from greenbone.scap.cli import (
     CLIError,
     CLIRunner,
 )
+from greenbone.scap.constants import STAMINA_API_RETRY_EXCEPTIONS
 from greenbone.scap.cpe.manager import CPEManager
 from greenbone.scap.db import PostgresDatabase
 from greenbone.scap.timer import Timer
@@ -206,7 +206,7 @@ class CPECli:
             with Timer() as download_timer:
                 count = 0
                 async for attempt in stamina.retry_context(
-                    on=httpx.HTTPError,
+                    on=STAMINA_API_RETRY_EXCEPTIONS,
                     attempts=retry_attempts,
                     timeout=None,
                 ):
@@ -250,7 +250,7 @@ class CPECli:
         last_modified_end_date: datetime | None,
     ) -> None:
         async for attempt in stamina.retry_context(
-            on=httpx.HTTPError,
+            on=STAMINA_API_RETRY_EXCEPTIONS,
             attempts=retry_attempts,
             timeout=None,
         ):

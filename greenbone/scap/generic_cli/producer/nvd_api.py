@@ -7,7 +7,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Generic, TypeVar
 
-import httpx
 import stamina
 from pontos.nvd import NVDApi, NVDResults
 from rich.console import Console
@@ -18,6 +17,7 @@ from greenbone.scap.cli import (
     DEFAULT_VERBOSITY,
 )
 
+from ...constants import STAMINA_API_RETRY_EXCEPTIONS
 from ...timer import Timer
 from .base import BaseScapProducer
 
@@ -222,7 +222,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
             The number of expected items.
         """
         async for attempt in stamina.retry_context(
-            on=httpx.HTTPError,
+            on=STAMINA_API_RETRY_EXCEPTIONS,
             attempts=self._retry_attempts,
             timeout=None,
         ):
@@ -275,7 +275,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
             with Timer() as download_timer:
                 count = 0
                 async for attempt in stamina.retry_context(
-                    on=httpx.HTTPError,
+                    on=STAMINA_API_RETRY_EXCEPTIONS,
                     attempts=self._additional_retry_attempts,
                     timeout=None,
                 ):
