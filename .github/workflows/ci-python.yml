@@ -16,7 +16,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install and check with black, pylint and pontos.version
         uses: greenbone/actions/lint-python@v3
         with:
@@ -33,7 +33,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v3
         with:
@@ -50,7 +50,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/coverage-python@v3
         with:
@@ -66,7 +66,7 @@ jobs:
           - "3.11"
           - "3.12"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run mypy
         uses: greenbone/actions/mypy-python@v3
         with:
