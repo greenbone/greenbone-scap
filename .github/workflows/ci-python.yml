@@ -74,6 +74,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           token: ${{ secrets.CODECOV_TOKEN }}
+          test-command: -m unittest -v -b
+        env:
+          RUN_ALL_TESTS: "true"
 
   mypy:
     name: Check type hints
