@@ -8,6 +8,11 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from greenbone.scap_sync.utils.time import (
+    start_of_today,
+    sub_days,
+)
+
 from .env import ScapEnv
 
 
@@ -28,9 +33,7 @@ def create_async_db_from_env(env: ScapEnv) -> AsyncEngine:
 
 
 async def get_latest_last_modified(db: AsyncEngine, model) -> _dt.datetime:
-    min_sync_date = _dt.datetime.now(_dt.timezone.utc).replace(
-        hour=0, minute=0, second=0, microsecond=0
-    ) - _dt.timedelta(days=2)
+    min_sync_date = sub_days(start_of_today(), 1)
 
     async with db.connect() as conn:
         res = await conn.execute(func.max(model.last_modified))
@@ -39,12 +42,12 @@ async def get_latest_last_modified(db: AsyncEngine, model) -> _dt.datetime:
         if not last_modified:
             last_modified = min_sync_date
             print(
-                f"Warning: No last_modified found, defaulting to {last_modified}"
+                f"Warning: No last_modified found, defaulting to {min_sync_date}"
             )
         elif last_modified < min_sync_date:
             last_modified = min_sync_date
             print(
-                f"Warning: last_modified too old, defaulting to {last_modified}"
+                f"Warning: last_modified too old, defaulting to {min_sync_date}"
             )
 
         return last_modified
