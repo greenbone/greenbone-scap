@@ -62,24 +62,19 @@ jobs:
   coverage:
     name: Test Coverage
     runs-on: "ubuntu-latest"
-    strategy:
-      matrix:
-        python-version:
-          - "3.11"
-          - "3.12"
     steps:
       - uses: actions/checkout@v6
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/coverage-python@v3
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"
           token: ${{ secrets.CODECOV_TOKEN }}
-          test-command: -m unittest -v -b
+          test-command: -m unittest -b
         env:
           RUN_ALL_TESTS: "true"
 
   mypy:
-    name: Check type hints
+    name: Check Types
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
