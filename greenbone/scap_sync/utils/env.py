@@ -11,7 +11,7 @@ from typing import Dict, TypedDict
 class ScapEnv(TypedDict):
     NVD_API_KEY: str | None
     DATABASE_HOST: str
-    DATABASE_PORT: int
+    DATABASE_PORT: str
     DATABASE_NAME: str
     DATABASE_USER: str
     DATABASE_PASSWORD: str
@@ -19,7 +19,7 @@ class ScapEnv(TypedDict):
 
 
 def read_envs() -> ScapEnv:
-    env: Dict[str, str | int] = {
+    env: Dict[str, str | None] = {
         "LOG_LEVEL": "info",
         "DATABASE_PORT": "5432",
     }
@@ -32,9 +32,6 @@ def read_envs() -> ScapEnv:
 
         if key == "NVD_API_KEY" and not value:
             continue
-
-        if key == "DATABASE_PORT" and value:
-            value = int(value)
 
         if value is None:
             missing.append(key)
