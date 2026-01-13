@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from __future__ import annotations
 
 import os
@@ -12,8 +16,10 @@ from greenbone.scap.cve.models import CVEModel
 from greenbone.scap_sync.main import main_async
 from greenbone.scap_sync.utils.db import create_async_db_from_env
 from greenbone.scap_sync.utils.env import read_envs
+from tests.tags import Integration_test
 
 
+@Integration_test
 class TestMainAsync(unittest.IsolatedAsyncioTestCase):
     postgres: PostgresContainer
     db: AsyncEngine
@@ -37,6 +43,7 @@ class TestMainAsync(unittest.IsolatedAsyncioTestCase):
             await conn.run_sync(CVEModel.metadata.create_all)
 
     async def asyncTearDown(self):
+        await self.db.dispose()
         self.postgres.stop()
 
     async def test_main_async_with_postgres_no_data(self):
@@ -50,14 +57,16 @@ class TestMainAsync(unittest.IsolatedAsyncioTestCase):
             self.assertGreater(
                 cnt,
                 0,
-                "scap-sync should upserted the cves of the last two days",
+                "scap-sync should upserted cve's for the default time window",
             )
 
             res = await conn.execute(select(func.count()).select_from(CPEModel))
             cnt = res.scalar_one()
 
             self.assertGreater(
-                cnt, 0, "scap-sync should upserted cpes of the last two days"
+                cnt,
+                0,
+                "scap-sync should upserted cpes for the default timewindow",
             )
 
 
