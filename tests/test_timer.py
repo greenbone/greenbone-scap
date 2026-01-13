@@ -6,8 +6,10 @@ import unittest
 from time import sleep
 
 from greenbone.scap.timer import Timer, TimerError
+from tests.tags import Unit_test
 
 
+@Unit_test
 class TimerTestCase(unittest.TestCase):
     def test_context_manager(self):
         t = Timer()

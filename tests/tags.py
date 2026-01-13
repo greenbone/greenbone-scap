@@ -12,3 +12,5 @@ RUN_INTEGRATION_TESTS = (
 Integration_test = unittest.skipUnless(
     RUN_INTEGRATION_TESTS, "Skipping integration test"
 )
+
+Unit_test = unittest.skipIf(RUN_INTEGRATION_TESTS, "Skipping unit test")
