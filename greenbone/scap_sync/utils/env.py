@@ -25,10 +25,7 @@ def read_envs() -> ScapEnv:
     }
     missing: list[str] = []
     for key in ScapEnv.__annotations__:
-        value = os.getenv(key)
-
-        if value is None:
-            value = env.get(key)
+        value = os.getenv(key, env.get(key))
 
         if key == "NVD_API_KEY" and not value:
             continue

@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from greenbone.scap_sync.utils.time import (
-    start_of_today,
+    now,
     sub_days,
 )
 
@@ -37,7 +37,7 @@ def create_async_db_from_env(env: ScapEnv) -> AsyncEngine:
 
 
 async def get_latest_last_modified(db: AsyncEngine, model) -> _dt.datetime:
-    min_sync_date = sub_days(start_of_today(), 1)
+    min_sync_date = sub_days(now(), 1)
 
     async with db.connect() as conn:
         res = await conn.execute(func.max(model.last_modified))
