@@ -16,11 +16,12 @@ from greenbone.scap.cve.models import CVEModel
 from greenbone.scap_sync.main import main_async
 from greenbone.scap_sync.utils.db import create_async_db_from_env
 from greenbone.scap_sync.utils.env import read_envs
+from greenbone.scap_sync.utils.time import now, sub_days
 from tests.tags import Integration_test
 
 
 @Integration_test
-class TestMainAsync(unittest.IsolatedAsyncioTestCase):
+class TestScapSync(unittest.IsolatedAsyncioTestCase):
     postgres: PostgresContainer
     db: AsyncEngine
 
@@ -46,26 +47,32 @@ class TestMainAsync(unittest.IsolatedAsyncioTestCase):
         await self.db.dispose()
         self.postgres.stop()
 
-    async def test_main_async_with_postgres_no_data(self):
+    async def test_scap_sync_without_data(self):
+        """Scap-sync should default to a 1day sync without any last_modified data"""
 
+        # Arrange
+        min_last_modified = sub_days(now(), 1)
+
+        # Act
         await main_async()
 
+        # Assert
         async with self.db.connect() as conn:
-            res = await conn.execute(select(func.count()).select_from(CVEModel))
-            cnt = res.scalar_one()
+            res = await conn.execute(func.max(CVEModel.last_modified))
+            last_mod_cve = res.scalar_one()
 
-            self.assertGreater(
-                cnt,
-                0,
+            self.assertGreaterEqual(
+                last_mod_cve,
+                min_last_modified,
                 "scap-sync should upserted cve's for the default time window",
             )
 
-            res = await conn.execute(select(func.count()).select_from(CPEModel))
-            cnt = res.scalar_one()
+            res = await conn.execute(func.max(CPEModel.last_modified))
+            last_mod_cpe = res.scalar_one()
 
-            self.assertGreater(
-                cnt,
-                0,
+            self.assertGreaterEqual(
+                last_mod_cpe,
+                min_last_modified,
                 "scap-sync should upserted cpes for the default timewindow",
             )
 
