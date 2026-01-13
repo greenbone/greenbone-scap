@@ -48,7 +48,7 @@ class TestScapSync(unittest.IsolatedAsyncioTestCase):
         self.postgres.stop()
 
     async def test_scap_sync_without_data(self):
-        """Scap-sync should default to a 1day sync without any last_modified data"""
+        """Scap-sync should default to a 1day sync with an empty db"""
 
         # Arrange
         min_last_modified = sub_days(now(), 1)
