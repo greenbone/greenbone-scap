@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Greenbone AG
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 from pontos.nvd.cpe import CPEApi
 from sqlalchemy.ext.asyncio import AsyncEngine
 
