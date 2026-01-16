@@ -26,6 +26,7 @@ from tests.cpe_match.worker.mock_producer import (
     uuid_replace,
     uuid_replace_str,
 )
+from tests.tags import Unit_test
 
 
 def parse_worker_args(raw_args):
@@ -38,6 +39,7 @@ def parse_worker_args(raw_args):
     return parser.parse_args(raw_args)
 
 
+@Unit_test
 class ParseArgsTestCase(unittest.TestCase):
     @patch(
         "greenbone.scap.cpe_match.producer.db.CpeMatchDatabaseProducer",
@@ -139,6 +141,7 @@ class ParseArgsTestCase(unittest.TestCase):
         )
 
 
+@Unit_test
 class InitTestCase(unittest.TestCase):
     def test_missing_user(self):
         console = Console(quiet=True)
@@ -295,6 +298,7 @@ async def async_generate_db_cpe_match_strings(
         yield new_model
 
 
+@Unit_test
 class ProduceTestCase(unittest.IsolatedAsyncioTestCase):
     NUM_CHUNKS = 5
     CHUNK_SIZE = 3
