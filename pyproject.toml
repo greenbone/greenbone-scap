@@ -7,20 +7,20 @@ license = "GPL-3.0-or-later"
 readme = "README.md"
 
 classifiers = [
-  # Full list: https://pypi.org/pypi?%3Aaction=list_classifiers
-  "Development Status :: 4 - Beta",
-  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)", # pylint: disable=line-too-long
-  "Environment :: Console",
-  "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Operating System :: OS Independent",
-  "Topic :: Software Development :: Libraries :: Python Modules",
+    # Full list: https://pypi.org/pypi?%3Aaction=list_classifiers
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)", # pylint: disable=line-too-long
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 packages = [
-  { include = "greenbone/scap" },
-  { include = "tests", format = "sdist" },
+    { include = "greenbone/scap" },
+    { include = "tests", format = "sdist" },
 ]
 
 [tool.poetry.dependencies]
@@ -38,6 +38,7 @@ autohooks-plugin-black = ">=23.10.0"
 autohooks-plugin-ruff = ">=23.10.0"
 autohooks-plugin-mypy = ">=23.10.0"
 coverage = ">=7.2.7"
+testcontainers = ">=4.14.0"
 
 [tool.black]
 line-length = 80
@@ -58,9 +59,9 @@ exclude = '''
 [tool.autohooks]
 mode = "poetry"
 pre-commit = [
-  "autohooks.plugins.black",
-  "autohooks.plugins.ruff",
-  "autohooks.plugins.mypy",
+    "autohooks.plugins.black",
+    "autohooks.plugins.ruff",
+    "autohooks.plugins.mypy",
 ]
 
 [tool.pontos.version]
@@ -80,6 +81,7 @@ greenbone-cpe-find = 'greenbone.scap.cpe.cli.find:main'
 greenbone-cpe-match-db-download = 'greenbone.scap.cpe_match.cli.db_download:main'
 greenbone-cpe-match-json-download = 'greenbone.scap.cpe_match.cli.json_download:main'
 greenbone-cpe-match-db-to-json = 'greenbone.scap.cpe_match.cli.db_to_json:main'
+greenbone-scap-sync = 'greenbone.scap_sync.main:main'
 
 [tool.mypy]
 files = "greenbone"
