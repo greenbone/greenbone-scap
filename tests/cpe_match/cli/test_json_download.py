@@ -10,8 +10,10 @@ from greenbone.scap.cli import DEFAULT_RETRIES, DEFAULT_VERBOSITY
 from greenbone.scap.cpe_match.cli.json_download import parse_args
 from greenbone.scap.cpe_match.cli.processor import CPE_MATCH_DEFAULT_CHUNK_SIZE
 from greenbone.scap.generic_cli.queue import DEFAULT_QUEUE_SIZE
+from tests.tags import Unit_test
 
 
+@Unit_test
 class ParseArgsTestCase(unittest.TestCase):
     def test_defaults(self):
         args = parse_args([])
