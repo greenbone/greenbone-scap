@@ -5,8 +5,10 @@
 import unittest
 
 from greenbone.scap.version import canonical_version, is_valid_version
+from tests.tags import Unit_test
 
 
+@Unit_test
 class CanonicalVersionTestCase(unittest.TestCase):
     def test_invalid_version(self):
         self.assertIsNone(canonical_version("a.b"))
@@ -20,6 +22,7 @@ class CanonicalVersionTestCase(unittest.TestCase):
         self.assertEqual(canonical_version("1.2.3.dev1"), "1.2.3")
 
 
+@Unit_test
 class IsValidVersionTestCase(unittest.TestCase):
     def test_invalid_version(self):
         self.assertFalse(is_valid_version(None))
