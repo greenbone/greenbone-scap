@@ -7,8 +7,10 @@ from contextlib import redirect_stderr
 from io import StringIO
 
 from greenbone.scap.cpe.cli.find import parse_args
+from tests.tags import Unit_test
 
 
+@Unit_test
 class ParseArgsTestCase(unittest.TestCase):
     def test_defaults(self):
         args = parse_args(["cpe"])
