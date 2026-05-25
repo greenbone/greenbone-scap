@@ -11,8 +11,10 @@ from pathlib import Path
 from pontos.testing import temp_directory
 
 from greenbone.scap.cpe.cli.download import DEFAULT_QUEUE_SIZE, parse_args
+from tests.tags import Unit_test
 
 
+@Unit_test
 class ParseArgsTestCase(unittest.TestCase):
     def test_defaults(self):
         args = parse_args([])

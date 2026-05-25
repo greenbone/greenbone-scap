@@ -16,6 +16,7 @@ from greenbone.scap.cpe_match.cli.processor import CpeMatchProcessor
 from greenbone.scap.cpe_match.db.models import CPEMatchStringDatabaseModel
 from greenbone.scap.cpe_match.worker.db import CpeMatchDatabaseWriteWorker
 from tests.cpe_match.worker.mock_producer import CpeMatchMockProducer
+from tests.tags import Unit_test
 
 
 def parse_worker_args(raw_args):
@@ -28,6 +29,7 @@ def parse_worker_args(raw_args):
     return parser.parse_args(raw_args)
 
 
+@Unit_test
 class ParseArgsTestCase(unittest.TestCase):
     @patch(
         "greenbone.scap.cpe_match.worker.db.CpeMatchDatabaseWriteWorker",
@@ -130,6 +132,7 @@ class ParseArgsTestCase(unittest.TestCase):
         )
 
 
+@Unit_test
 class InitTestCase(unittest.TestCase):
     def test_missing_user(self):
         console = Console(quiet=True)
@@ -259,6 +262,7 @@ class InitTestCase(unittest.TestCase):
         )
 
 
+@Unit_test
 class WriteTestCase(unittest.IsolatedAsyncioTestCase):
     NUM_CHUNKS = 5
     CHUNK_SIZE = 3
