@@ -14,6 +14,7 @@ from rich.progress import Progress
 from greenbone.scap.cli import DEFAULT_RETRIES, DEFAULT_VERBOSITY
 from greenbone.scap.cpe_match.cli.processor import CpeMatchProcessor
 from greenbone.scap.cpe_match.producer.nvd_api import CpeMatchNvdApiProducer
+from tests.tags import Unit_test
 
 
 def parse_producer_args(raw_args):
@@ -25,6 +26,7 @@ def parse_producer_args(raw_args):
     return parser.parse_args(raw_args)
 
 
+@Unit_test
 class ParseArgsTestCase(unittest.TestCase):
     @patch(
         "greenbone.scap.cpe_match.producer.nvd_api.CpeMatchNvdApiProducer",

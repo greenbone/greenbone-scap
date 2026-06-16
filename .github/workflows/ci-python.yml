@@ -10,11 +10,6 @@ jobs:
   linting:
     name: Linting
     runs-on: "ubuntu-latest"
-    strategy:
-      matrix:
-        python-version:
-          - "3.11"
-          - "3.12"
     steps:
       - uses: actions/checkout@v6
       - name: Install and check with black, pylint and pontos.version
@@ -22,49 +17,97 @@ jobs:
         with:
           packages: greenbone
           linter: ruff check
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.13"
 
-  test:
-    name: Run all tests
+  unittest:
+    name: Unit-Tests
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
         python-version:
           - "3.11"
           - "3.12"
+          - "3.13"
     steps:
       - uses: actions/checkout@v6
       - name: Install python, poetry and dependencies
         uses: greenbone/actions/poetry@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Run unit tests
-        run: poetry run python -m unittest
+      - name: Run tests
+        run: poetry run coverage run --data-file coverage.unit -m unittest -v -b
+      - name: Upload coverage data
+        if: matrix.python-version == '3.13'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-unit
+          path: coverage.unit
+          if-no-files-found: error
 
-  coverage:
-    name: Run all tests
+  integrationtest:
+    name: Integration-Tests
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
         python-version:
-          - "3.11"
-          - "3.12"
+          - "3.13"
     steps:
       - uses: actions/checkout@v6
       - name: Install python, poetry and dependencies
-        uses: greenbone/actions/coverage-python@v3
+        uses: greenbone/actions/poetry@v3
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Run tests
+        run: poetry run coverage run --data-file coverage.integration -m unittest -b -v
+        env:
+          RUN_INTEGRATION_TESTS: "true"
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-integration
+          path: coverage.integration
+          if-no-files-found: error
+
+  coverage:
+    name: Test Coverage
+    runs-on: "ubuntu-latest"
+    needs:
+      - unittest
+      - integrationtest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download unit test coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-unit
+      - name: Download integration test coverage data
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-integration
+      - name: Install python, poetry and dependencies
+        uses: greenbone/actions/poetry@v3
+        with:
+          python-version: "3.13"
+      - name: Combine coverage data
+        run: |
+          poetry run coverage combine coverage.unit coverage.integration
+          poetry run coverage xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: true
 
   mypy:
-    name: Check type hints
+    name: Check Types
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
         python-version:
           - "3.11"
           - "3.12"
+          - "3.13"
     steps:
       - uses: actions/checkout@v6
       - name: Run mypy
