@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID, uuid4
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
@@ -22,7 +22,9 @@ def uuid_replace(uuid: UUID, iteration: int, number: int) -> UUID:
 
 
 def generate_cpe_name(iteration: int, number: int) -> str:
-    return f"cpe:2.3:a:acme:test-app:1.{iteration-1}.{number-1}:*:*:*:*:*:*:*"
+    return (
+        f"cpe:2.3:a:acme:test-app:1.{iteration - 1}.{number - 1}:*:*:*:*:*:*:*"
+    )
 
 
 class CpeMatchMockProducer(BaseScapProducer[CPEMatchString]):
@@ -55,7 +57,7 @@ class CpeMatchMockProducer(BaseScapProducer[CPEMatchString]):
                 self.base_match_criteria_id, chunk_index, item_index
             )
             cpe_name = generate_cpe_name(chunk_index, item_index)
-            now = datetime.now()
+            now = datetime.now(tz=UTC)
 
             new_cpe_match_string = CPEMatchString(
                 match_criteria_id=match_criteria_id,
@@ -84,5 +86,5 @@ class CpeMatchMockProducer(BaseScapProducer[CPEMatchString]):
     async def __aenter__(self):
         self.context_entered = True
 
-    async def __aexit__(self, __exc_type, __exc_value, __traceback):
+    async def __aexit__(self, /, __exc_type, __exc_value, __traceback):
         self.context_exited = True

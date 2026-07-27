@@ -26,7 +26,7 @@ from sqlalchemy.orm import (
 
 
 class Base(AsyncAttrs, DeclarativeBase):
-    type_annotation_map = {
+    type_annotation_map = {  # noqa: RUF012
         datetime: DateTime(timezone=True),
     }
 

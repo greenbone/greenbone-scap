@@ -5,8 +5,8 @@
 
 import asyncio
 import sys
-from inspect import isclass
-from typing import Any, Callable, Coroutine, NoReturn, Type
+from collections.abc import Callable, Coroutine
+from typing import Any, NoReturn, TypeAlias
 
 import httpx
 from rich.console import Console
@@ -28,7 +28,9 @@ class CLIError(ScapError):
     pass
 
 
-runner_func = Callable[[Console, Console], Coroutine[Any, Any, int | None]]
+RunnerFunc: TypeAlias = Callable[
+    [Console, Console], Coroutine[Any, Any, int | None]
+]
 
 
 class CLI:
@@ -41,16 +43,16 @@ class CLI:
 
 class CLIRunner:
     @staticmethod
-    def run(func: runner_func | Type[CLI]) -> NoReturn:
+    def run(func: RunnerFunc | type[CLI]) -> NoReturn:
         console = Console(log_path=False)
         error_console = Console(file=sys.stderr, log_path=False)
         try:
             with Timer() as timer:
-                if isclass(func):
+                if isinstance(func, type):
                     cli = func(console, error_console)
                     asyncio.run(cli.run())
                 else:
-                    asyncio.run(func(console, error_console))  # type: ignore
+                    asyncio.run(func(console, error_console))
 
             console.log(
                 f"Done. Elapsed time: {timer.elapsed_time:0.4f} seconds"

@@ -36,7 +36,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
     _item_type_plural = BaseScapProducer._item_type_plural
     "Plural form of the type of items to use in log messages"
 
-    _arg_defaults = {
+    _arg_defaults = {  # noqa: RUF012
         "retry_attempts": DEFAULT_RETRIES,
         "verbose": DEFAULT_VERBOSITY,
     }
@@ -138,7 +138,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         retry_attempts: int = DEFAULT_RETRIES,
         nvd_api_key: str | None = None,
         request_results: int | None = None,
-        request_filter_opts: dict = {},
+        request_filter_opts: dict | None = None,
         start_index: int = 0,
         verbose: int | None = None,
     ):
@@ -172,7 +172,7 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
         self._request_results: int | None = request_results
         "Maximum number of results to request from the API."
 
-        self._request_filter_opts: dict[str, Any] = request_filter_opts
+        self._request_filter_opts: dict[str, Any] = request_filter_opts or {}
         "Filter options to pass to the API requests."
 
         self._start_index: int = start_index
@@ -198,7 +198,6 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
 
         Returns: The new `NVDApi` object.
         """
-        pass
 
     @abstractmethod
     async def _create_nvd_results(self) -> NVDResults[T]:
@@ -208,7 +207,6 @@ class NvdApiProducer(BaseScapProducer, Generic[T]):
 
         Returns: The new `NVDResults` object.
         """
-        pass
 
     async def fetch_initial_data(
         self,

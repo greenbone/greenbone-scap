@@ -4,7 +4,8 @@
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import Any, AsyncContextManager, Generic, TypeVar
+from contextlib import AbstractAsyncContextManager
+from typing import Any, Generic, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress
@@ -21,7 +22,7 @@ T = TypeVar("T")
 "Generic type variable for the type of SCAP items handled"
 
 
-class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
+class BaseScapProducer(AbstractAsyncContextManager, ABC, Generic[T]):
     """
     Abstract async context manager base class for a producer generating
     SCAP items, e.g. by downloading from an API or querying a database.
@@ -33,7 +34,7 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
     _item_type_plural: str = "SCAP items"
     "Plural form of the type of items to use in log messages"
 
-    _arg_defaults: dict[str, Any] = {
+    _arg_defaults: dict[str, Any] = {  # noqa: RUF012
         "verbose": DEFAULT_VERBOSITY,
     }
     "Default values for optional arguments."
@@ -47,7 +48,6 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
         Args:
             parser: The parser to add the arguments to.
         """
-        pass
 
     def __init__(
         self,
@@ -110,7 +110,6 @@ class BaseScapProducer(Generic[T], AsyncContextManager, ABC):
         It should also create a task for the `progress` object and update it
         regularly.
         """
-        pass
 
     def set_queue(self, queue: ScapChunkQueue[T]) -> None:
         """

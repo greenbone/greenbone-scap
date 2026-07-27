@@ -24,7 +24,7 @@ class CpeMatchProcessor(ScapProcessor[CPEMatchString]):
     """
 
     _item_type_plural = CPE_MATCH_TYPE_PLURAL
-    _arg_defaults = {
+    _arg_defaults = {  # noqa: RUF012
         "chunk_size": CPE_MATCH_DEFAULT_CHUNK_SIZE,
         "queue_size": DEFAULT_QUEUE_SIZE,
         "verbose": DEFAULT_VERBOSITY,

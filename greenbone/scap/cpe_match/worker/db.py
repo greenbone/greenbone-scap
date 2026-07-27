@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import Namespace
-from typing import AsyncContextManager, Sequence
+from collections.abc import Sequence
+from contextlib import AbstractAsyncContextManager
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
@@ -63,12 +64,12 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
         error_console: Console,
         progress: Progress,
         *,
-        database_name: str,
-        database_schema: str,
-        database_host: str,
-        database_port: int,
-        database_user: str,
-        database_password: str,
+        database_name: str | None,
+        database_schema: str | None,
+        database_host: str | None,
+        database_port: int | None,
+        database_user: str | None,
+        database_password: str | None,
         echo_sql: bool = False,
         verbose: int = DEFAULT_VERBOSITY,
     ):
@@ -119,7 +120,7 @@ class CpeMatchDatabaseWriteWorker(ScapDatabaseWriteWorker[CPEMatchString]):
         """
         await self._manager.add_cpe_match_strings(chunk)
 
-    def _create_manager(self) -> AsyncContextManager:
+    def _create_manager(self) -> AbstractAsyncContextManager:
         """
         Callback creating a new database manager for handling SCAP items.
 

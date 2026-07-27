@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2025 Greenbone AG
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
-from typing import Sequence
+from collections.abc import Sequence
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
@@ -11,7 +11,6 @@ from greenbone.scap.generic_cli.worker.base import BaseScapWorker
 
 
 class CpeMatchMockWorker(BaseScapWorker[CPEMatchString]):
-
     def __init__(
         self,
         console: Console,
@@ -40,5 +39,5 @@ class CpeMatchMockWorker(BaseScapWorker[CPEMatchString]):
     async def __aenter__(self):
         self.context_entered = True
 
-    async def __aexit__(self, __exc_type, __exc_value, __traceback):
+    async def __aexit__(self, /, __exc_type, __exc_value, __traceback):
         self.context_exited = True

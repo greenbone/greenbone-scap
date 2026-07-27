@@ -5,7 +5,9 @@
 import os
 from abc import abstractmethod
 from argparse import ArgumentParser
-from typing import AsyncContextManager, Sequence, Type, TypeVar
+from collections.abc import Sequence
+from contextlib import AbstractAsyncContextManager
+from typing import TypeVar
 
 from rich.console import Console
 from rich.progress import Progress
@@ -48,7 +50,7 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
     _item_type_plural = BaseScapWorker._item_type_plural
     "Plural form of the type of items to use in log messages."
 
-    _arg_defaults = {
+    _arg_defaults = {  # noqa: RUF012
         "database_name": DEFAULT_POSTGRES_DATABASE_NAME,
         "database_host": DEFAULT_POSTGRES_HOST,
         "database_port": DEFAULT_POSTGRES_PORT,
@@ -59,7 +61,7 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
 
     @classmethod
     def add_args_to_parser(
-        cls: Type["ScapDatabaseWriteWorker"],
+        cls: type["ScapDatabaseWriteWorker"],
         parser: ArgumentParser,
     ):
         """
@@ -77,13 +79,13 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
             "--database-name",
             help=f"Name of the {cls._item_type_plural} database. "
             f"Uses environment variable DATABASE_NAME or "
-            f"\"{cls._arg_defaults['database_name']}\" if not set.",
+            f'"{cls._arg_defaults["database_name"]}" if not set.',
         )
         db_group.add_argument(
             "--database-host",
             help=f"Name of the {cls._item_type_plural} database host. "
             f"Uses environment variable DATABASE_HOST or "
-            f"\"{cls._arg_defaults['database_host']}\" if not set.",
+            f'"{cls._arg_defaults["database_host"]}" if not set.',
         )
 
         db_group.add_argument(
@@ -107,7 +109,7 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
             "--database-schema",
             help=f"Name of the {cls._item_type_plural} database schema. "
             f"Uses environment variable DATABASE_SCHEMA or "
-            f"\"{cls._arg_defaults['database_schema']}\" if not set.",
+            f'"{cls._arg_defaults["database_schema"]}" if not set.',
         )
         db_group.add_argument(
             "--echo-sql",
@@ -195,8 +197,8 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
         self._database = PostgresDatabase(
             user=database_user,
             password=database_password,
-            host=database_host,
-            port=database_port,
+            host=database_host,  # type: ignore
+            port=database_port,  # type: ignore
             dbname=database_name,  # type: ignore
             schema=database_schema,
             echo=echo_sql,
@@ -219,16 +221,14 @@ class ScapDatabaseWriteWorker(BaseScapWorker[T]):
         Args:
             chunk: The last chunk fetched from the queue.
         """
-        pass
 
     @abstractmethod
-    def _create_manager(self) -> AsyncContextManager:
+    def _create_manager(self) -> AbstractAsyncContextManager:
         """
         Callback creating a new database manager for handling SCAP items.
 
         Returns: The new database manager.
         """
-        pass
 
     async def _loop_start(self) -> None:
         """

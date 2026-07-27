@@ -5,9 +5,9 @@
 import asyncio
 import os
 from argparse import ArgumentParser, Namespace
-from datetime import datetime
+from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Sequence
 
 import shtab
 import stamina
@@ -185,7 +185,7 @@ class CVECli:
 
                 await manager.add_cves(cves)
 
-                self.cves_to_update.update((cve.id for cve in cves))
+                self.cves_to_update.update(cve.id for cve in cves)
 
                 self.queue.task_done()
 
@@ -193,9 +193,9 @@ class CVECli:
                 progress.update(task, completed=processed)
 
                 self.console.log(f"Processed {processed:,} CVEs")
-            except asyncio.CancelledError as e:
+            except asyncio.CancelledError:
                 self.console.log("Worker has been cancelled")
-                raise e
+                raise
 
         self.console.log(f"Processing of {processed:,} CVEs done")
 
@@ -400,7 +400,7 @@ async def download(console: Console, error_console: Console):
         console, verbose=verbose, chunk_size=chunk_size, queue_size=queue_size
     )
 
-    run_time = datetime.now()
+    run_time = datetime.now(tz=UTC)
 
     with Progress(console=console) as progress:
         async with (
@@ -408,7 +408,6 @@ async def download(console: Console, error_console: Console):
             CVEApi(token=nvd_api_key) as api,
             CVEManager(cve_database) as cve_manager,
         ):
-
             if verbose:
                 console.log("Initialized databases.")
 

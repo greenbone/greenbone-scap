@@ -75,7 +75,7 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
         retry_attempts: int = DEFAULT_RETRIES,
         nvd_api_key: str | None = None,
         request_results: int | None = None,
-        request_filter_opts: dict = {},
+        request_filter_opts: dict | None = None,
         start_index: int = 0,
         verbose: int | None = None,
     ):
@@ -102,7 +102,7 @@ class CpeMatchNvdApiProducer(NvdApiProducer[CPEMatchString]):
             retry_attempts=retry_attempts,
             nvd_api_key=nvd_api_key,
             request_results=request_results,
-            request_filter_opts=request_filter_opts,
+            request_filter_opts=request_filter_opts or {},
             start_index=start_index,
             verbose=verbose,
         )

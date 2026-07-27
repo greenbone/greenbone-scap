@@ -5,7 +5,7 @@
 from abc import ABC
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Type, TypeVar
+from typing import TypeVar
 
 from rich.console import Console
 from rich.progress import Progress
@@ -29,7 +29,7 @@ class ScapJsonWriteWorker(BaseScapWorker[T], ABC):
     _item_type_plural = BaseScapWorker._item_type_plural
     "Default values for optional arguments."
 
-    _arg_defaults = {
+    _arg_defaults = {  # noqa: RUF012
         "storage_path": ".",
         "schema_path": None,
         "verbose": DEFAULT_VERBOSITY,
@@ -38,7 +38,7 @@ class ScapJsonWriteWorker(BaseScapWorker[T], ABC):
 
     @classmethod
     def add_args_to_parser(
-        cls: Type["ScapJsonWriteWorker"],
+        cls: type["ScapJsonWriteWorker"],
         parser: ArgumentParser,
     ):
         """

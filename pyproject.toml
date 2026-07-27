@@ -34,32 +34,15 @@ pontos = ">=23.12.4"
 fastjsonschema = ">=2.21.1"
 
 [tool.poetry.group.dev.dependencies]
-autohooks-plugin-black = ">=23.10.0"
-autohooks-plugin-ruff = ">=23.10.0"
+autohooks-plugin-ruff = ">=23.10.1"
 autohooks-plugin-mypy = ">=23.10.0"
 coverage = ">=7.2.7"
-
-[tool.black]
-line-length = 80
-target-version = ["py311", "py312"]
-exclude = '''
-/(
-    \.git
-  | \.venv
-  | \.github
-  | \.vscode
-  | _build
-  | build
-  | dist
-  | docs
-)/
-'''
 
 [tool.autohooks]
 mode = "poetry"
 pre-commit = [
-  "autohooks.plugins.black",
-  "autohooks.plugins.ruff",
+  "autohooks.plugins.ruff.check",
+  "autohooks.plugins.ruff.format",
   "autohooks.plugins.mypy",
 ]
 

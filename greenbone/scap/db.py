@@ -2,8 +2,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
 from types import TracebackType
-from typing import Any, AsyncContextManager, Callable, Literal, Self
+from typing import Any, Literal, Self
 from urllib.parse import quote_plus
 
 from sqlalchemy.dialects.postgresql import Insert as PostgresInsert
@@ -21,7 +23,7 @@ MAX_CONNECTIONS = 50
 DEFAULT_CONNECTION_TIMEOUT = 300.0  # 5 min
 
 
-class Database(AsyncContextManager):
+class Database(AbstractAsyncContextManager):
     def __init__(
         self,
         engine: AsyncEngine,
@@ -35,7 +37,7 @@ class Database(AsyncContextManager):
     def session(self) -> AsyncSession:
         return self._session_maker()
 
-    def transaction(self) -> AsyncContextManager[AsyncConnection]:
+    def transaction(self) -> AbstractAsyncContextManager[AsyncConnection]:
         return self.engine.begin()
 
     def delete(self) -> None:
@@ -58,7 +60,6 @@ class Database(AsyncContextManager):
         _traceback: TracebackType | None,
     ) -> None:
         await self.engine.dispose()
-        return
 
 
 class PostgresDatabase(Database):

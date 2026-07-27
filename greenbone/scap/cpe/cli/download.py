@@ -5,9 +5,9 @@
 import asyncio
 import os
 from argparse import ArgumentParser, Namespace
-from datetime import datetime
+from collections.abc import Sequence
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Sequence
 
 import shtab
 import stamina
@@ -181,10 +181,10 @@ class CPECli:
                 progress.update(task, completed=processed)
 
                 await manager.add_cpes(cpes)
-            except asyncio.CancelledError as e:
+            except asyncio.CancelledError:
                 if self.verbose:
                     self.console.log("Worker has been cancelled")
-                raise e
+                raise
 
             self.queue.task_done()
 
@@ -409,8 +409,7 @@ async def download(console: Console, error_console: Console) -> None:
 
             if since:
                 console.log(
-                    "Downloading changed or new CPEs since "
-                    f"{since.isoformat()}"
+                    f"Downloading changed or new CPEs since {since.isoformat()}"
                 )
 
             await cli.download(
@@ -427,7 +426,7 @@ async def download(console: Console, error_console: Console) -> None:
                 if until:
                     run_time = until
                 else:
-                    run_time = datetime.now()
+                    run_time = datetime.now(tz=UTC)
                 # ensure directories exist
                 run_time_file.parent.mkdir(parents=True, exist_ok=True)
                 run_time_file.write_text(

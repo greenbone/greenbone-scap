@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import Namespace
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 from uuid import UUID
 
 from pontos.nvd.models.cpe_match_string import CPEMatch, CPEMatchString
@@ -74,12 +74,12 @@ class CpeMatchDatabaseProducer(DatabaseProducer[CPEMatchString]):
         error_console: Console,
         progress: Progress,
         *,
-        database_name: str,
-        database_schema: str,
-        database_host: str,
-        database_port: int,
-        database_user: str,
-        database_password: str,
+        database_name: str | None,
+        database_schema: str | None,
+        database_host: str | None,
+        database_port: int | None,
+        database_user: str | None,
+        database_password: str | None,
         echo_sql: bool = False,
         verbose: int = DEFAULT_VERBOSITY,
     ):

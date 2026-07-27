@@ -2,9 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections.abc import AsyncIterator, Iterable, Sequence
+from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from types import TracebackType
-from typing import AsyncContextManager, AsyncIterator, Iterable, Self, Sequence
+from typing import Self
 
 from pontos.cpe import ANY, NA
 from pontos.cpe import CPE as CPEParser
@@ -141,7 +143,7 @@ class VersionRange:
         return clause
 
 
-class CPEManager(AsyncContextManager):
+class CPEManager(AbstractAsyncContextManager):
     def __init__(
         self,
         db: Database,
@@ -169,7 +171,6 @@ class CPEManager(AsyncContextManager):
         if not exc_type:
             # not an error
             await self.add_cpes(self._cpes)
-        return
 
     async def add(self, cpe: CPE) -> None:
         self._cpes.append(cpe)
@@ -185,13 +186,13 @@ class CPEManager(AsyncContextManager):
         if self._update:
             statement = statement.on_conflict_do_update(
                 index_elements=[CPEModel.cpe_name],
-                set_=dict(
-                    cpe_name=statement.excluded.cpe_name,
-                    cpe_name_id=statement.excluded.cpe_name_id,
-                    deprecated=statement.excluded.deprecated,
-                    last_modified=statement.excluded.last_modified,
-                    created=statement.excluded.created,
-                ),
+                set_={
+                    "cpe_name": statement.excluded.cpe_name,
+                    "cpe_name_id": statement.excluded.cpe_name_id,
+                    "deprecated": statement.excluded.deprecated,
+                    "last_modified": statement.excluded.last_modified,
+                    "created": statement.excluded.created,
+                },
             )
         else:
             statement = statement.on_conflict_do_nothing()
@@ -200,13 +201,13 @@ class CPEManager(AsyncContextManager):
             await transaction.execute(
                 statement,
                 [
-                    dict(
-                        cpe_name=cpe.cpe_name,
-                        cpe_name_id=cpe.cpe_name_id,
-                        deprecated=cpe.deprecated,
-                        last_modified=cpe.last_modified,
-                        created=cpe.created,
-                    )
+                    {
+                        "cpe_name": cpe.cpe_name,
+                        "cpe_name_id": cpe.cpe_name_id,
+                        "deprecated": cpe.deprecated,
+                        "last_modified": cpe.last_modified,
+                        "created": cpe.created,
+                    }
                     for cpe in cpes
                 ],
             )
@@ -221,42 +222,42 @@ class CPEManager(AsyncContextManager):
         for cpe in cpes:
             parsed_cpe = CPEParser.from_string(cpe.cpe_name)
             cpe_names_data.append(
-                dict(
-                    cpe_name=cpe.cpe_name,
-                    part=parsed_cpe.part.value,
-                    vendor=parsed_cpe.vendor,
-                    product=parsed_cpe.product,
-                    version=parsed_cpe.version,
-                    version_canonical=canonical_version(parsed_cpe.version),
-                    update=parsed_cpe.update,
-                    edition=parsed_cpe.edition,
-                    language=parsed_cpe.language,
-                    sw_edition=parsed_cpe.sw_edition,
-                    target_sw=parsed_cpe.target_sw,
-                    target_hw=parsed_cpe.target_hw,
-                    other=parsed_cpe.other,
-                )
+                {
+                    "cpe_name": cpe.cpe_name,
+                    "part": parsed_cpe.part.value,
+                    "vendor": parsed_cpe.vendor,
+                    "product": parsed_cpe.product,
+                    "version": parsed_cpe.version,
+                    "version_canonical": canonical_version(parsed_cpe.version),
+                    "update": parsed_cpe.update,
+                    "edition": parsed_cpe.edition,
+                    "language": parsed_cpe.language,
+                    "sw_edition": parsed_cpe.sw_edition,
+                    "target_sw": parsed_cpe.target_sw,
+                    "target_hw": parsed_cpe.target_hw,
+                    "other": parsed_cpe.other,
+                }
             )
         if cpe_names_data:
             statement = self._db.insert(CPENamesModel)
             if self._update:
                 statement = statement.on_conflict_do_update(
                     index_elements=[CPENamesModel.cpe_name],
-                    set_=dict(
-                        cpe_name=statement.excluded.cpe_name,
-                        part=statement.excluded.part,
-                        vendor=statement.excluded.vendor,
-                        product=statement.excluded.product,
-                        version=statement.excluded.version,
-                        version_canonical=statement.excluded.version_canonical,
-                        update=statement.excluded["update"],
-                        edition=statement.excluded.edition,
-                        language=statement.excluded.language,
-                        sw_edition=statement.excluded.sw_edition,
-                        target_sw=statement.excluded.target_sw,
-                        target_hw=statement.excluded.target_hw,
-                        other=statement.excluded.other,
-                    ),
+                    set_={
+                        "cpe_name": statement.excluded.cpe_name,
+                        "part": statement.excluded.part,
+                        "vendor": statement.excluded.vendor,
+                        "product": statement.excluded.product,
+                        "version": statement.excluded.version,
+                        "version_canonical": statement.excluded.version_canonical,
+                        "update": statement.excluded["update"],
+                        "edition": statement.excluded.edition,
+                        "language": statement.excluded.language,
+                        "sw_edition": statement.excluded.sw_edition,
+                        "target_sw": statement.excluded.target_sw,
+                        "target_hw": statement.excluded.target_hw,
+                        "other": statement.excluded.other,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -264,11 +265,11 @@ class CPEManager(AsyncContextManager):
             await connection.execute(statement, cpe_names_data)
 
         titles_data = [
-            dict(
-                cpe=cpe.cpe_name,
-                title=title.title,
-                lang=title.lang,
-            )
+            {
+                "cpe": cpe.cpe_name,
+                "title": title.title,
+                "lang": title.lang,
+            }
             for cpe in cpes
             for title in cpe.titles
         ]
@@ -281,10 +282,10 @@ class CPEManager(AsyncContextManager):
                         TitleModel.title,
                         TitleModel.lang,
                     ],
-                    set_=dict(
-                        title=statement.excluded.title,
-                        lang=statement.excluded.lang,
-                    ),
+                    set_={
+                        "title": statement.excluded.title,
+                        "lang": statement.excluded.lang,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -292,11 +293,11 @@ class CPEManager(AsyncContextManager):
             await connection.execute(statement, titles_data)
 
         references_data = [
-            dict(
-                cpe=cpe.cpe_name,
-                ref=ref.ref,
-                type=str(ref.type) if ref.type else None,
-            )
+            {
+                "cpe": cpe.cpe_name,
+                "ref": ref.ref,
+                "type": str(ref.type) if ref.type else None,
+            }
             for cpe in cpes
             for ref in cpe.refs
         ]
@@ -308,10 +309,10 @@ class CPEManager(AsyncContextManager):
                         ReferenceModel.cpe,
                         ReferenceModel.ref,
                     ],
-                    set_=dict(
-                        ref=statement.excluded.ref,
-                        type=statement.excluded.type,
-                    ),
+                    set_={
+                        "ref": statement.excluded.ref,
+                        "type": statement.excluded.type,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -319,11 +320,11 @@ class CPEManager(AsyncContextManager):
             await connection.execute(statement, references_data)
 
         deprecated_by_data = [
-            dict(
-                cpe=cpe.cpe_name,
-                cpe_name=deprecated.cpe_name,
-                cpe_name_id=deprecated.cpe_name_id,
-            )
+            {
+                "cpe": cpe.cpe_name,
+                "cpe_name": deprecated.cpe_name,
+                "cpe_name_id": deprecated.cpe_name_id,
+            }
             for cpe in cpes
             for deprecated in cpe.deprecated_by
         ]
@@ -335,10 +336,10 @@ class CPEManager(AsyncContextManager):
                         DeprecatedByModel.cpe,
                         DeprecatedByModel.cpe_name,
                     ],
-                    set_=dict(
-                        cpe_name=statement.excluded.cpe_name,
-                        cpe_name_id=statement.excluded.cpe_name_id,
-                    ),
+                    set_={
+                        "cpe_name": statement.excluded.cpe_name,
+                        "cpe_name_id": statement.excluded.cpe_name_id,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
