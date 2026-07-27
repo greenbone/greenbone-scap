@@ -68,7 +68,7 @@ version-module-file = "greenbone/scap/__version__.py"
 
 [tool.ruff]
 line-length = 80
-target-version = "py39"
+target-version = "py311"
 
 [tool.ruff.lint]
 extend-select = ["I", "PLE", "PLW"]
