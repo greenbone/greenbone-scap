@@ -22,6 +22,7 @@ jobs:
         with:
           packages: greenbone
           linter: ruff check
+          formatter: ruff format
           python-version: ${{ matrix.python-version }}
 
   test:

@@ -2,18 +2,12 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from contextlib import asynccontextmanager
+from collections.abc import AsyncGenerator, AsyncIterator, Iterable, Sequence
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from datetime import datetime
 from itertools import chain
 from types import TracebackType
-from typing import (
-    AsyncContextManager,
-    AsyncGenerator,
-    AsyncIterator,
-    Iterable,
-    Self,
-    Sequence,
-)
+from typing import Self
 from uuid import uuid4
 
 from pontos.nvd.models.cve import CVE
@@ -43,7 +37,7 @@ DEFAULT_THRESHOLD = 100
 DEFAULT_YIELD_PER = 100
 
 
-class CVEManager(AsyncContextManager):
+class CVEManager(AbstractAsyncContextManager):
     """
     Manager for the CVE database.
 
@@ -88,7 +82,6 @@ class CVEManager(AsyncContextManager):
         if not exc_type:
             # not an error
             await self.add_cves(self._cves)
-        return
 
     async def add(self, cve: CVE) -> None:
         """
@@ -117,20 +110,20 @@ class CVEManager(AsyncContextManager):
         if self._update:
             statement = statement.on_conflict_do_update(
                 index_elements=[CVEModel.id],
-                set_=dict(
-                    id=statement.excluded.id,
-                    source_identifier=statement.excluded.source_identifier,
-                    published=statement.excluded.published,
-                    last_modified=statement.excluded.last_modified,
-                    vuln_status=statement.excluded.vuln_status,
-                    evaluator_comment=statement.excluded.evaluator_comment,
-                    evaluator_solution=statement.excluded.evaluator_solution,
-                    evaluator_impact=statement.excluded.evaluator_impact,
-                    cisa_exploit_add=statement.excluded.cisa_exploit_add,
-                    cisa_action_due=statement.excluded.cisa_action_due,
-                    cisa_required_action=statement.excluded.cisa_required_action,
-                    cisa_vulnerability_name=statement.excluded.cisa_vulnerability_name,
-                ),
+                set_={
+                    "id": statement.excluded.id,
+                    "source_identifier": statement.excluded.source_identifier,
+                    "published": statement.excluded.published,
+                    "last_modified": statement.excluded.last_modified,
+                    "vuln_status": statement.excluded.vuln_status,
+                    "evaluator_comment": statement.excluded.evaluator_comment,
+                    "evaluator_solution": statement.excluded.evaluator_solution,
+                    "evaluator_impact": statement.excluded.evaluator_impact,
+                    "cisa_exploit_add": statement.excluded.cisa_exploit_add,
+                    "cisa_action_due": statement.excluded.cisa_action_due,
+                    "cisa_required_action": statement.excluded.cisa_required_action,
+                    "cisa_vulnerability_name": statement.excluded.cisa_vulnerability_name,
+                },
             )
         else:
             statement = statement.on_conflict_do_nothing()
@@ -139,20 +132,20 @@ class CVEManager(AsyncContextManager):
             await transaction.execute(
                 statement,
                 [
-                    dict(
-                        id=cve.id,
-                        source_identifier=cve.source_identifier,
-                        published=cve.published,
-                        last_modified=cve.last_modified,
-                        vuln_status=cve.vuln_status,
-                        evaluator_comment=cve.evaluator_comment,
-                        evaluator_solution=cve.evaluator_solution,
-                        evaluator_impact=cve.evaluator_impact,
-                        cisa_exploit_add=cve.cisa_exploit_add,
-                        cisa_action_due=cve.cisa_action_due,
-                        cisa_required_action=cve.cisa_required_action,
-                        cisa_vulnerability_name=cve.cisa_vulnerability_name,
-                    )
+                    {
+                        "id": cve.id,
+                        "source_identifier": cve.source_identifier,
+                        "published": cve.published,
+                        "last_modified": cve.last_modified,
+                        "vuln_status": cve.vuln_status,
+                        "evaluator_comment": cve.evaluator_comment,
+                        "evaluator_solution": cve.evaluator_solution,
+                        "evaluator_impact": cve.evaluator_impact,
+                        "cisa_exploit_add": cve.cisa_exploit_add,
+                        "cisa_action_due": cve.cisa_action_due,
+                        "cisa_required_action": cve.cisa_required_action,
+                        "cisa_vulnerability_name": cve.cisa_vulnerability_name,
+                    }
                     for cve in cves
                 ],
             )
@@ -191,81 +184,81 @@ class CVEManager(AsyncContextManager):
 
             cvss_v2_data.extend(
                 [
-                    dict(
-                        cve_id=cve.id,
-                        source=cvss_v2.source,
-                        type=cvss_v2.type,
-                        base_severity=cvss_v2.base_severity,
-                        exploitability_score=cvss_v2.exploitability_score,
-                        impact_score=cvss_v2.impact_score,
-                        ac_insuf_info=cvss_v2.ac_insuf_info,
-                        obtain_all_privilege=cvss_v2.obtain_all_privilege,
-                        obtain_user_privilege=cvss_v2.obtain_user_privilege,
-                        obtain_other_privilege=cvss_v2.obtain_other_privilege,
-                        user_interaction_required=cvss_v2.user_interaction_required,
-                        vector_string=cvss_v2.cvss_data.vector_string,
-                        version=cvss_v2.cvss_data.version,
-                        base_score=cvss_v2.cvss_data.base_score,
-                        access_vector=cvss_v2.cvss_data.access_vector,
-                        access_complexity=cvss_v2.cvss_data.access_complexity,
-                        authentication=cvss_v2.cvss_data.authentication,
-                        confidentiality_impact=cvss_v2.cvss_data.confidentiality_impact,
-                        integrity_impact=cvss_v2.cvss_data.integrity_impact,
-                        availability_impact=cvss_v2.cvss_data.availability_impact,
-                        exploitability=cvss_v2.cvss_data.exploitability,
-                        remediation_level=cvss_v2.cvss_data.remediation_level,
-                        report_confidence=cvss_v2.cvss_data.report_confidence,
-                        temporal_score=cvss_v2.cvss_data.temporal_score,
-                        collateral_damage_potential=cvss_v2.cvss_data.collateral_damage_potential,
-                        target_distribution=cvss_v2.cvss_data.target_distribution,
-                        confidentiality_requirement=cvss_v2.cvss_data.confidentiality_requirement,
-                        integrity_requirement=cvss_v2.cvss_data.integrity_requirement,
-                        availability_requirement=cvss_v2.cvss_data.availability_requirement,
-                        environmental_score=cvss_v2.cvss_data.environmental_score,
-                    )
+                    {
+                        "cve_id": cve.id,
+                        "source": cvss_v2.source,
+                        "type": cvss_v2.type,
+                        "base_severity": cvss_v2.base_severity,
+                        "exploitability_score": cvss_v2.exploitability_score,
+                        "impact_score": cvss_v2.impact_score,
+                        "ac_insuf_info": cvss_v2.ac_insuf_info,
+                        "obtain_all_privilege": cvss_v2.obtain_all_privilege,
+                        "obtain_user_privilege": cvss_v2.obtain_user_privilege,
+                        "obtain_other_privilege": cvss_v2.obtain_other_privilege,
+                        "user_interaction_required": cvss_v2.user_interaction_required,
+                        "vector_string": cvss_v2.cvss_data.vector_string,
+                        "version": cvss_v2.cvss_data.version,
+                        "base_score": cvss_v2.cvss_data.base_score,
+                        "access_vector": cvss_v2.cvss_data.access_vector,
+                        "access_complexity": cvss_v2.cvss_data.access_complexity,
+                        "authentication": cvss_v2.cvss_data.authentication,
+                        "confidentiality_impact": cvss_v2.cvss_data.confidentiality_impact,
+                        "integrity_impact": cvss_v2.cvss_data.integrity_impact,
+                        "availability_impact": cvss_v2.cvss_data.availability_impact,
+                        "exploitability": cvss_v2.cvss_data.exploitability,
+                        "remediation_level": cvss_v2.cvss_data.remediation_level,
+                        "report_confidence": cvss_v2.cvss_data.report_confidence,
+                        "temporal_score": cvss_v2.cvss_data.temporal_score,
+                        "collateral_damage_potential": cvss_v2.cvss_data.collateral_damage_potential,
+                        "target_distribution": cvss_v2.cvss_data.target_distribution,
+                        "confidentiality_requirement": cvss_v2.cvss_data.confidentiality_requirement,
+                        "integrity_requirement": cvss_v2.cvss_data.integrity_requirement,
+                        "availability_requirement": cvss_v2.cvss_data.availability_requirement,
+                        "environmental_score": cvss_v2.cvss_data.environmental_score,
+                    }
                     for cvss_v2 in cve.metrics.cvss_metric_v2
                 ]
             )
 
             cvss_v3_data.extend(
                 [
-                    dict(
-                        cve_id=cve.id,
-                        source=cvss_v3.source,
-                        type=cvss_v3.type,
-                        exploitability_score=cvss_v3.exploitability_score,
-                        impact_score=cvss_v3.impact_score,
-                        vector_string=cvss_v3.cvss_data.vector_string,
-                        version=cvss_v3.cvss_data.version,
-                        base_score=cvss_v3.cvss_data.base_score,
-                        base_severity=cvss_v3.cvss_data.base_severity,
-                        attack_vector=cvss_v3.cvss_data.attack_vector,
-                        attack_complexity=cvss_v3.cvss_data.attack_complexity,
-                        privileges_required=cvss_v3.cvss_data.privileges_required,
-                        user_interaction=cvss_v3.cvss_data.user_interaction,
-                        scope=cvss_v3.cvss_data.scope,
-                        confidentiality_impact=cvss_v3.cvss_data.confidentiality_impact,
-                        integrity_impact=cvss_v3.cvss_data.integrity_impact,
-                        availability_impact=cvss_v3.cvss_data.availability_impact,
-                        exploit_code_maturity=cvss_v3.cvss_data.exploit_code_maturity,
-                        remediation_level=cvss_v3.cvss_data.remediation_level,
-                        report_confidence=cvss_v3.cvss_data.report_confidence,
-                        temporal_score=cvss_v3.cvss_data.temporal_score,
-                        temporal_severity=cvss_v3.cvss_data.temporal_severity,
-                        confidentiality_requirement=cvss_v3.cvss_data.confidentiality_requirement,
-                        integrity_requirement=cvss_v3.cvss_data.integrity_requirement,
-                        availability_requirement=cvss_v3.cvss_data.availability_requirement,
-                        modified_attack_vector=cvss_v3.cvss_data.modified_attack_vector,
-                        modified_attack_complexity=cvss_v3.cvss_data.modified_attack_complexity,
-                        modified_privileges_required=cvss_v3.cvss_data.modified_privileges_required,
-                        modified_user_interaction=cvss_v3.cvss_data.modified_user_interaction,
-                        modified_scope=cvss_v3.cvss_data.modified_scope,
-                        modified_confidentiality_impact=cvss_v3.cvss_data.modified_confidentiality_impact,
-                        modified_integrity_impact=cvss_v3.cvss_data.modified_integrity_impact,
-                        modified_availability_impact=cvss_v3.cvss_data.modified_availability_impact,
-                        environmental_score=cvss_v3.cvss_data.environmental_score,
-                        environmental_severity=cvss_v3.cvss_data.environmental_severity,
-                    )
+                    {
+                        "cve_id": cve.id,
+                        "source": cvss_v3.source,
+                        "type": cvss_v3.type,
+                        "exploitability_score": cvss_v3.exploitability_score,
+                        "impact_score": cvss_v3.impact_score,
+                        "vector_string": cvss_v3.cvss_data.vector_string,
+                        "version": cvss_v3.cvss_data.version,
+                        "base_score": cvss_v3.cvss_data.base_score,
+                        "base_severity": cvss_v3.cvss_data.base_severity,
+                        "attack_vector": cvss_v3.cvss_data.attack_vector,
+                        "attack_complexity": cvss_v3.cvss_data.attack_complexity,
+                        "privileges_required": cvss_v3.cvss_data.privileges_required,
+                        "user_interaction": cvss_v3.cvss_data.user_interaction,
+                        "scope": cvss_v3.cvss_data.scope,
+                        "confidentiality_impact": cvss_v3.cvss_data.confidentiality_impact,
+                        "integrity_impact": cvss_v3.cvss_data.integrity_impact,
+                        "availability_impact": cvss_v3.cvss_data.availability_impact,
+                        "exploit_code_maturity": cvss_v3.cvss_data.exploit_code_maturity,
+                        "remediation_level": cvss_v3.cvss_data.remediation_level,
+                        "report_confidence": cvss_v3.cvss_data.report_confidence,
+                        "temporal_score": cvss_v3.cvss_data.temporal_score,
+                        "temporal_severity": cvss_v3.cvss_data.temporal_severity,
+                        "confidentiality_requirement": cvss_v3.cvss_data.confidentiality_requirement,
+                        "integrity_requirement": cvss_v3.cvss_data.integrity_requirement,
+                        "availability_requirement": cvss_v3.cvss_data.availability_requirement,
+                        "modified_attack_vector": cvss_v3.cvss_data.modified_attack_vector,
+                        "modified_attack_complexity": cvss_v3.cvss_data.modified_attack_complexity,
+                        "modified_privileges_required": cvss_v3.cvss_data.modified_privileges_required,
+                        "modified_user_interaction": cvss_v3.cvss_data.modified_user_interaction,
+                        "modified_scope": cvss_v3.cvss_data.modified_scope,
+                        "modified_confidentiality_impact": cvss_v3.cvss_data.modified_confidentiality_impact,
+                        "modified_integrity_impact": cvss_v3.cvss_data.modified_integrity_impact,
+                        "modified_availability_impact": cvss_v3.cvss_data.modified_availability_impact,
+                        "environmental_score": cvss_v3.cvss_data.environmental_score,
+                        "environmental_severity": cvss_v3.cvss_data.environmental_severity,
+                    }
                     for cvss_v3 in chain(
                         cve.metrics.cvss_metric_v30,
                         cve.metrics.cvss_metric_v31,
@@ -295,11 +288,11 @@ class CVEManager(AsyncContextManager):
         self, connection: AsyncConnection, cves: Sequence[CVE]
     ) -> None:
         cve_descriptions = [
-            dict(
-                cve_id=cve.id,
-                lang=description.lang,
-                value=description.value,
-            )
+            {
+                "cve_id": cve.id,
+                "lang": description.lang,
+                "value": description.value,
+            }
             for cve in cves
             for description in cve.descriptions
         ]
@@ -314,11 +307,11 @@ class CVEManager(AsyncContextManager):
                         CVEDescriptionModel.cve_id,
                         CVEDescriptionModel.lang,
                     ],
-                    set_=dict(
-                        cve_id=statement.excluded.cve_id,
-                        lang=statement.excluded.lang,
-                        value=statement.excluded.value,
-                    ),
+                    set_={
+                        "cve_id": statement.excluded.cve_id,
+                        "lang": statement.excluded.lang,
+                        "value": statement.excluded.value,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -329,12 +322,12 @@ class CVEManager(AsyncContextManager):
         self, connection: AsyncConnection, cves: Sequence[CVE]
     ) -> None:
         references = [
-            dict(
-                cve_id=cve.id,
-                url=reference.url,
-                source=reference.source,
-                tags=reference.tags,
-            )
+            {
+                "cve_id": cve.id,
+                "url": reference.url,
+                "source": reference.source,
+                "tags": reference.tags,
+            }
             for cve in cves
             for reference in cve.references
         ]
@@ -349,12 +342,12 @@ class CVEManager(AsyncContextManager):
                         ReferenceModel.cve_id,
                         ReferenceModel.url,
                     ],
-                    set_=dict(
-                        cve_id=statement.excluded.cve_id,
-                        url=statement.excluded.url,
-                        source=statement.excluded.source,
-                        tags=statement.excluded.tags,
-                    ),
+                    set_={
+                        "cve_id": statement.excluded.cve_id,
+                        "url": statement.excluded.url,
+                        "source": statement.excluded.source,
+                        "tags": statement.excluded.tags,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -365,11 +358,11 @@ class CVEManager(AsyncContextManager):
         self, connection: AsyncConnection, cves: Sequence[CVE]
     ) -> None:
         weaknesses = [
-            dict(
-                cve_id=cve.id,
-                source=weakness.source,
-                type=weakness.type,
-            )
+            {
+                "cve_id": cve.id,
+                "source": weakness.source,
+                "type": weakness.type,
+            }
             for cve in cves
             for weakness in cve.weaknesses
         ]
@@ -385,11 +378,11 @@ class CVEManager(AsyncContextManager):
                         WeaknessModel.source,
                         WeaknessModel.type,
                     ],
-                    set_=dict(
-                        cve_id=statement.excluded.cve_id,
-                        source=statement.excluded.source,
-                        type=statement.excluded.type,
-                    ),
+                    set_={
+                        "cve_id": statement.excluded.cve_id,
+                        "source": statement.excluded.source,
+                        "type": statement.excluded.type,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -397,13 +390,13 @@ class CVEManager(AsyncContextManager):
             await connection.execute(statement, weaknesses)
 
             weakness_descriptions = [
-                dict(
-                    cve_id=cve.id,
-                    source=weakness.source,
-                    type=weakness.type,
-                    lang=description.lang,
-                    value=description.value,
-                )
+                {
+                    "cve_id": cve.id,
+                    "source": weakness.source,
+                    "type": weakness.type,
+                    "lang": description.lang,
+                    "value": description.value,
+                }
                 for cve in cves
                 for weakness in cve.weaknesses
                 for description in weakness.description
@@ -423,12 +416,12 @@ class CVEManager(AsyncContextManager):
                             WeaknessDescriptionModel.lang,
                             WeaknessDescriptionModel.value,
                         ],
-                        set_=dict(
-                            source=statement.excluded.source,
-                            type=statement.excluded.type,
-                            lang=statement.excluded.lang,
-                            value=statement.excluded.value,
-                        ),
+                        set_={
+                            "source": statement.excluded.source,
+                            "type": statement.excluded.type,
+                            "lang": statement.excluded.lang,
+                            "value": statement.excluded.value,
+                        },
                     )
                 else:
                     statement = statement.on_conflict_do_nothing()
@@ -439,12 +432,12 @@ class CVEManager(AsyncContextManager):
         self, connection: AsyncConnection, cves: Sequence[CVE]
     ) -> None:
         comments = [
-            dict(
-                cve_id=cve.id,
-                organization=comment.organization,
-                comment=comment.comment,
-                last_modified=comment.last_modified,
-            )
+            {
+                "cve_id": cve.id,
+                "organization": comment.organization,
+                "comment": comment.comment,
+                "last_modified": comment.last_modified,
+            }
             for cve in cves
             for comment in cve.vendor_comments
         ]
@@ -459,12 +452,12 @@ class CVEManager(AsyncContextManager):
                         VendorCommentModel.cve_id,
                         VendorCommentModel.organization,
                     ],
-                    set_=dict(
-                        cve_id=statement.excluded.cve_id,
-                        organization=statement.excluded.organization,
-                        comment=statement.excluded.comment,
-                        last_modified=statement.excluded.last_modified,
-                    ),
+                    set_={
+                        "cve_id": statement.excluded.cve_id,
+                        "organization": statement.excluded.organization,
+                        "comment": statement.excluded.comment,
+                        "last_modified": statement.excluded.last_modified,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()
@@ -497,12 +490,12 @@ class CVEManager(AsyncContextManager):
             for configuration in cve.configurations:
                 configuration_id = uuid4()
                 configurations.append(
-                    dict(
-                        id=configuration_id,
-                        cve_id=cve.id,
-                        operator=configuration.operator,
-                        negate=configuration.negate,
-                    )
+                    {
+                        "id": configuration_id,
+                        "cve_id": cve.id,
+                        "operator": configuration.operator,
+                        "negate": configuration.negate,
+                    }
                 )
 
                 if not configuration.nodes:
@@ -511,12 +504,12 @@ class CVEManager(AsyncContextManager):
                 for node in configuration.nodes:
                     node_id = uuid4()
                     nodes.append(
-                        dict(
-                            id=node_id,
-                            configuration_id=configuration_id,
-                            operator=node.operator,
-                            negate=node.negate,
-                        )
+                        {
+                            "id": node_id,
+                            "configuration_id": configuration_id,
+                            "operator": node.operator,
+                            "negate": node.negate,
+                        }
                     )
 
                     if not node.cpe_match:
@@ -524,16 +517,16 @@ class CVEManager(AsyncContextManager):
 
                     matches.extend(
                         [
-                            dict(
-                                node_id=node_id,
-                                match_criteria_id=match.match_criteria_id,
-                                vulnerable=match.vulnerable,
-                                criteria=match.criteria,
-                                version_start_excluding=match.version_start_excluding,
-                                version_start_including=match.version_start_including,
-                                version_end_excluding=match.version_end_excluding,
-                                version_end_including=match.version_end_including,
-                            )
+                            {
+                                "node_id": node_id,
+                                "match_criteria_id": match.match_criteria_id,
+                                "vulnerable": match.vulnerable,
+                                "criteria": match.criteria,
+                                "version_start_excluding": match.version_start_excluding,
+                                "version_start_including": match.version_start_including,
+                                "version_end_excluding": match.version_end_excluding,
+                                "version_end_including": match.version_end_including,
+                            }
                             for match in node.cpe_match
                         ]
                     )

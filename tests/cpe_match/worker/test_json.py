@@ -164,7 +164,7 @@ class WriteTestCase(unittest.IsolatedAsyncioTestCase):
 
             temp_file_path: Path = temp_storage_path / "nvd-cpe-matches.json"
             self.assertTrue(temp_file_path.exists())
-            with open(temp_file_path) as fp:
+            with temp_file_path.open() as fp:
                 parsed_json = json.load(fp)
             self.assertEqual(parsed_json.get("resultsPerPage"), 15)
             self.assertEqual(parsed_json.get("totalResults"), 15)
@@ -217,7 +217,7 @@ class WriteTestCase(unittest.IsolatedAsyncioTestCase):
 
             temp_file_path: Path = temp_storage_path / "nvd-cpe-matches.json"
             self.assertTrue(temp_file_path.exists())
-            with open(temp_file_path) as fp:
+            with temp_file_path.open() as fp:
                 parsed_json = json.load(fp)
             self.assertEqual(parsed_json.get("resultsPerPage"), 15)
             self.assertEqual(parsed_json.get("totalResults"), 15)

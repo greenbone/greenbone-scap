@@ -5,7 +5,7 @@
 import argparse
 import asyncio
 import unittest
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
@@ -278,13 +278,13 @@ async def async_generate_db_cpe_match_strings(
         cpe_name = generate_cpe_name(1, i)
         cpe_name_id = uuid_replace_str(base_cpe_name_id, 1, i)
 
-        now = datetime.now()
+        now = datetime.now(tz=UTC)
         new_match_model = CPEMatchDatabaseModel()
         new_match_model.cpe_name = cpe_name
-        new_match_model.cpe_name_id = cpe_name_id
+        new_match_model.cpe_name_id = cpe_name_id  # type: ignore
 
         new_model = CPEMatchStringDatabaseModel()
-        new_model.match_criteria_id = match_criteria_id
+        new_model.match_criteria_id = match_criteria_id  # type: ignore
         new_model.criteria = cpe_name
         new_model.last_modified = now
         new_model.cpe_last_modified = now - timedelta(days=-1)

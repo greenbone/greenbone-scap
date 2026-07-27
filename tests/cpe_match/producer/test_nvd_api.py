@@ -77,7 +77,7 @@ class ParseArgsTestCase(unittest.TestCase):
             retry_attempts=DEFAULT_RETRIES,
             request_results=None,
             request_filter_opts={
-                "last_modified_start_date": datetime(2024, 12, 9)
+                "last_modified_start_date": datetime(2024, 12, 9)  # noqa: DTZ001
             },
             start_index=None,
             verbose=DEFAULT_VERBOSITY,
@@ -112,7 +112,7 @@ class ParseArgsTestCase(unittest.TestCase):
                 retry_attempts=DEFAULT_RETRIES,
                 request_results=None,
                 request_filter_opts={
-                    "last_modified_start_date": datetime(2024, 12, 5)
+                    "last_modified_start_date": datetime(2024, 12, 5)  # noqa: DTZ001
                 },
                 start_index=None,
                 verbose=DEFAULT_VERBOSITY,

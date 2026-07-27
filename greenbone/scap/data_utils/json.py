@@ -5,7 +5,7 @@
 import json
 import re
 import uuid
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -88,7 +88,7 @@ class JsonEncoder(json.JSONEncoder):
 
         if isinstance(obj, datetime):
             return (
-                obj.astimezone(timezone.utc)
+                obj.astimezone(UTC)
                 .replace(tzinfo=None)
                 .isoformat(timespec="milliseconds")
                 + "Z"
@@ -191,4 +191,4 @@ class JsonManager:
             print(msg)
             self._error_console.print(msg)
             if self._raise_error_on_validation:
-                raise e
+                raise

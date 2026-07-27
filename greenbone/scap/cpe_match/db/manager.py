@@ -2,9 +2,11 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+from collections.abc import AsyncIterator, Sequence
+from contextlib import AbstractAsyncContextManager
 from datetime import datetime
 from types import TracebackType
-from typing import AsyncContextManager, AsyncIterator, Self, Sequence
+from typing import Self
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from sqlalchemy import (
@@ -25,7 +27,7 @@ DEFAULT_THRESHOLD = 100
 DEFAULT_YIELD_PER = 100
 
 
-class CPEMatchStringDatabaseManager(AsyncContextManager):
+class CPEMatchStringDatabaseManager(AbstractAsyncContextManager):
     def __init__(
         self,
         db: Database,
@@ -53,7 +55,6 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
         if not exc_type:
             # not an error
             await self.add_cpe_match_strings(self._cpe_match_strings)
-        return
 
     async def add(self, match_string: CPEMatchString) -> None:
         self._cpe_match_strings.append(match_string)
@@ -71,17 +72,17 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
         if self._update:
             statement = statement.on_conflict_do_update(
                 index_elements=[CPEMatchStringDatabaseModel.match_criteria_id],
-                set_=dict(
-                    criteria=statement.excluded.criteria,
-                    status=statement.excluded.status,
-                    cpe_last_modified=statement.excluded.cpe_last_modified,
-                    created=statement.excluded.created,
-                    last_modified=statement.excluded.last_modified,
-                    version_start_including=statement.excluded.version_start_including,
-                    version_start_excluding=statement.excluded.version_start_excluding,
-                    version_end_including=statement.excluded.version_end_including,
-                    version_end_excluding=statement.excluded.version_end_excluding,
-                ),
+                set_={
+                    "criteria": statement.excluded.criteria,
+                    "status": statement.excluded.status,
+                    "cpe_last_modified": statement.excluded.cpe_last_modified,
+                    "created": statement.excluded.created,
+                    "last_modified": statement.excluded.last_modified,
+                    "version_start_including": statement.excluded.version_start_including,
+                    "version_start_excluding": statement.excluded.version_start_excluding,
+                    "version_end_including": statement.excluded.version_end_including,
+                    "version_end_excluding": statement.excluded.version_end_excluding,
+                },
             )
         else:
             statement = statement.on_conflict_do_nothing()
@@ -90,18 +91,18 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
             await transaction.execute(
                 statement,
                 [
-                    dict(
-                        match_criteria_id=match_string.match_criteria_id,
-                        criteria=match_string.criteria,
-                        status=match_string.status,
-                        cpe_last_modified=match_string.cpe_last_modified,
-                        created=match_string.created,
-                        last_modified=match_string.last_modified,
-                        version_start_including=match_string.version_start_including,
-                        version_start_excluding=match_string.version_start_excluding,
-                        version_end_including=match_string.version_end_including,
-                        version_end_excluding=match_string.version_end_excluding,
-                    )
+                    {
+                        "match_criteria_id": match_string.match_criteria_id,
+                        "criteria": match_string.criteria,
+                        "status": match_string.status,
+                        "cpe_last_modified": match_string.cpe_last_modified,
+                        "created": match_string.created,
+                        "last_modified": match_string.last_modified,
+                        "version_start_including": match_string.version_start_including,
+                        "version_start_excluding": match_string.version_start_excluding,
+                        "version_end_including": match_string.version_end_including,
+                        "version_end_excluding": match_string.version_end_excluding,
+                    }
                     for match_string in match_strings
                 ],
             )
@@ -115,11 +116,11 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
         match_strings: Sequence[CPEMatchString],
     ) -> None:
         matches_data = [
-            dict(
-                match_criteria_id=match_string.match_criteria_id,
-                cpe_name=match.cpe_name,
-                cpe_name_id=match.cpe_name_id,
-            )
+            {
+                "match_criteria_id": match_string.match_criteria_id,
+                "cpe_name": match.cpe_name,
+                "cpe_name_id": match.cpe_name_id,
+            }
             for match_string in match_strings
             for match in match_string.matches
         ]
@@ -131,11 +132,11 @@ class CPEMatchStringDatabaseManager(AsyncContextManager):
                         CPEMatchDatabaseModel.match_criteria_id,
                         CPEMatchDatabaseModel.cpe_name_id,
                     ],
-                    set_=dict(
-                        match_criteria_id=statement.excluded.match_criteria_id,
-                        cpe_name=statement.excluded.cpe_name,
-                        cpe_name_id=statement.excluded.cpe_name_id,
-                    ),
+                    set_={
+                        "match_criteria_id": statement.excluded.match_criteria_id,
+                        "cpe_name": statement.excluded.cpe_name,
+                        "cpe_name_id": statement.excluded.cpe_name_id,
+                    },
                 )
             else:
                 statement = statement.on_conflict_do_nothing()

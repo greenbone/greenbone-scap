@@ -3,15 +3,16 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import time
+from contextlib import AbstractContextManager
 from types import TracebackType
-from typing import ContextManager, Self
+from typing import Self
 
 
 class TimerError(Exception):
     pass
 
 
-class Timer(ContextManager):
+class Timer(AbstractContextManager):
     def __init__(self) -> None:
         self._start_time: float | None = None
         self.elapsed_time: float | None = None
@@ -42,9 +43,9 @@ class Timer(ContextManager):
 
     def __exit__(
         self,
+        /,
         __exc_type: type[BaseException] | None,
         __exc_value: BaseException | None,
         __traceback: TracebackType | None,
     ) -> None:
         self.stop()
-        return

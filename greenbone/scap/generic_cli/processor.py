@@ -28,7 +28,7 @@ class ScapProcessor(Generic[T]):
     _item_type_plural = "SCAP items"
     "Plural form of the type of items to use in log messages."
 
-    _arg_defaults = {
+    _arg_defaults = {  # noqa: RUF012
         "chunk_size": DEFAULT_CHUNK_SIZE,
         "queue_size": DEFAULT_QUEUE_SIZE,
         "verbose": DEFAULT_VERBOSITY,

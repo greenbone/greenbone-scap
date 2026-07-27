@@ -5,7 +5,9 @@
 import asyncio
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser
-from typing import Any, AsyncContextManager, Generic, Sequence, TypeVar
+from collections.abc import Sequence
+from contextlib import AbstractAsyncContextManager
+from typing import Any, Generic, TypeVar
 
 from rich.console import Console
 from rich.progress import Progress, TaskID
@@ -18,7 +20,7 @@ T = TypeVar("T")
 "Generic type variable for the type of SCAP items handled"
 
 
-class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
+class BaseScapWorker(AbstractAsyncContextManager, ABC, Generic[T]):
     """
     Abstract async context manager base class for a worker consuming
     SCAP items, e.g. by writing them to a file or database.
@@ -30,7 +32,7 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
     _item_type_plural: str = "SCAP items"
     "Plural form of the type of items to use in log messages."
 
-    _arg_defaults: dict[str, Any] = {
+    _arg_defaults: dict[str, Any] = {  # noqa: RUF012
         "verbose": DEFAULT_VERBOSITY,
     }
     "Default values for optional arguments."
@@ -45,7 +47,6 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
         Args:
             parser: The parser to add the arguments to.
         """
-        pass
 
     def __init__(
         self,
@@ -94,7 +95,6 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
         Args:
             chunk: The last chunk fetched from the queue.
         """
-        pass
 
     async def _loop_start(self) -> None:
         """
@@ -151,10 +151,10 @@ class BaseScapWorker(Generic[T], AsyncContextManager, ABC):
                 )
 
                 await self._handle_chunk(chunk)
-            except asyncio.CancelledError as e:
+            except asyncio.CancelledError:
                 if self._verbose:
                     self._console.log("Worker has been cancelled")
-                raise e
+                raise
 
             self._queue.chunk_processed()
 

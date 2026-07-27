@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import Namespace
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console

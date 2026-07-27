@@ -4,7 +4,7 @@
 
 import unittest
 from contextlib import redirect_stderr
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from io import StringIO
 from pathlib import Path
 
@@ -127,7 +127,7 @@ class ParseArgsTestCase(unittest.TestCase):
         args = parse_args(["--since", "2024-01-01T15:24:17.000000+00:00"])
 
         self.assertEqual(
-            args.since, datetime(2024, 1, 1, 15, 24, 17, tzinfo=timezone.utc)
+            args.since, datetime(2024, 1, 1, 15, 24, 17, tzinfo=UTC)
         )
         with self.assertRaises(SystemExit), redirect_stderr(StringIO()):
             parse_args(["--since", "foo"])

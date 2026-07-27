@@ -3,10 +3,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import gzip
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Optional, Sequence, TextIO
+from typing import Any, TextIO
 
 from pontos.nvd.models.cpe_match_string import CPEMatchString
 from rich.console import Console
@@ -78,7 +79,7 @@ class MatchStringJsonManager(JsonManager):
             results_per_page=1,
             start_index=0,
             total_results=1,
-            timestamp=datetime.now(),
+            timestamp=datetime.now(tz=UTC),
             match_strings=[],
         )
         self._compress: bool = compress
@@ -99,7 +100,7 @@ class MatchStringJsonManager(JsonManager):
         self,
         data: dict[str, Any],
         out_file: TextIO,
-        validation_buffer: Optional[bytearray] = None,
+        validation_buffer: bytearray | None = None,
         *,
         indent: int = 1,
     ):
@@ -122,7 +123,7 @@ class MatchStringJsonManager(JsonManager):
             self._match_string_response.match_strings
         )
 
-        validation_buffer: Optional[bytearray] = None
+        validation_buffer: bytearray | None = None
         if self.validate:
             validation_buffer = bytearray()
 

@@ -32,7 +32,7 @@ class ParseArgsTestCase(unittest.TestCase):
 
     def test_since(self):
         args = parse_args(["--since", "2024-12-09"])
-        self.assertEqual(datetime(2024, 12, 9), args.since)
+        self.assertEqual(datetime(2024, 12, 9), args.since)  # noqa: DTZ001
 
     def test_since_from_file(self):
         args = parse_args(["--since-from-file", "/tmp/path"])

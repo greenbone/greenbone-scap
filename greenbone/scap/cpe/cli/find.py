@@ -6,7 +6,7 @@ import asyncio
 import os
 import sys
 from argparse import ArgumentParser, BooleanOptionalAction, Namespace
-from typing import Sequence
+from collections.abc import Sequence
 
 import shtab
 from pontos.cpe import CPE

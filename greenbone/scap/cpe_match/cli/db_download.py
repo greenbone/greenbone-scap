@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from argparse import ArgumentParser, Namespace
-from typing import Sequence
+from collections.abc import Sequence
 
 import shtab
 from rich.progress import Progress
