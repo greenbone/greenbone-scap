@@ -4,14 +4,14 @@
 
 import unittest
 
-from httpx2 import HTTPStatusError, Request, Response
+from pontos.github.api import HTTPStatusError, Request, Response
 from rich.console import Console
 
 from greenbone.scap.cli import CLIRunner
 
 
 class CLIRunnerTestCase(unittest.TestCase):
-    def test_httpx2_status_error(self):
+    def test_http_status_error(self):
         async def failing_request(
             console: Console, error_console: Console
         ) -> None:
