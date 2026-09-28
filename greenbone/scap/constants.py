@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 from json import JSONDecodeError
 
-from httpx2 import HTTPError
+from pontos.github.api import HTTPStatusError
 
 # Exceptions on API access to catch in order to retry these calls
 STAMINA_API_RETRY_EXCEPTIONS = (JSONDecodeError, HTTPError)
