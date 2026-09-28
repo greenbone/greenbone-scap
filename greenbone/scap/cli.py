@@ -8,7 +8,7 @@ import sys
 from collections.abc import Callable, Coroutine
 from typing import Any, NoReturn, TypeAlias
 
-from httpx2 import HTTPStatusError
+from pontos.github.api import HTTPStatusError
 from rich.console import Console
 
 from .errors import ScapError
