@@ -8,7 +8,7 @@ import sys
 from collections.abc import Callable, Coroutine
 from typing import Any, NoReturn, TypeAlias
 
-import httpx
+from pontos.github.api import HTTPStatusError
 from rich.console import Console
 
 from .errors import ScapError
@@ -64,7 +64,7 @@ class CLIRunner:
         except ScapError as e:
             error_console.print(f"Error: {e}")
             sys.exit(2)
-        except httpx.HTTPStatusError as e:
+        except HTTPStatusError as e:
             if e.response.is_client_error:
                 # the error is in the response message header
                 error_console.print(
