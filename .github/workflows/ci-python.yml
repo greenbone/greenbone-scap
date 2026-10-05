@@ -17,6 +17,8 @@ jobs:
         python-version:
           - "3.11"
           - "3.12"
+          - "3.13"
+          - "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install and check with black, pylint and pontos.version
@@ -35,6 +37,8 @@ jobs:
         python-version:
           - "3.11"
           - "3.12"
+          - "3.13"
+          - "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install python, poetry and dependencies
@@ -51,7 +55,6 @@ jobs:
       matrix:
         python-version:
           - "3.11"
-          - "3.12"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install python, poetry and dependencies
@@ -68,6 +71,8 @@ jobs:
         python-version:
           - "3.11"
           - "3.12"
+          - "3.13"
+          - "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Run mypy
