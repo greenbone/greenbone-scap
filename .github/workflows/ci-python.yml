@@ -21,10 +21,11 @@ jobs:
           - "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install and check with black, pylint and pontos.version
+      - name: Install python and check with ruff
         uses: greenbone/actions/lint-python@v3
         with:
           packages: greenbone
+          package-manager: uv
           linter: ruff check
           formatter: ruff format
           python-version: ${{ matrix.python-version }}
@@ -41,12 +42,12 @@ jobs:
           - "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install python, poetry and dependencies
-        uses: greenbone/actions/poetry@v3
+      - name: Install python and uv
+        uses: greenbone/actions/uv@v3
         with:
           python-version: ${{ matrix.python-version }}
       - name: Run unit tests
-        run: poetry run python -m unittest
+        run: uv run python -m unittest
 
   coverage:
     name: Upload coverage
@@ -57,10 +58,11 @@ jobs:
           - "3.11"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install python, poetry and dependencies
+      - name: Install python and upload coverage
         uses: greenbone/actions/coverage-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+          package-manager: uv
           token: ${{ secrets.CODECOV_TOKEN }}
 
   mypy:
@@ -75,7 +77,9 @@ jobs:
           - "3.14"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Run mypy
-        uses: greenbone/actions/mypy-python@v3
+      - name: Install python and uv
+        uses: greenbone/actions/uv@v3
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Run mypy
+        run: uv run mypy
