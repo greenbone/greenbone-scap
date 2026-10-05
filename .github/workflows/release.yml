@@ -59,7 +59,7 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag ${{ steps.release-version.outputs.release-version }} ${{ steps.release-version.outputs.last-release-version }}..HEAD
+          git-cliff -v --strip header -o /tmp/changelog.md --unreleased --tag v${{ steps.release-version.outputs.release-version }} ${{ steps.release-version.outputs.last-release-version }}..HEAD
       - name: Release with release action
         uses: greenbone/actions/release@v3
         with:
