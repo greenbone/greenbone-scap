@@ -49,7 +49,7 @@ jobs:
         run: poetry run python -m unittest
 
   coverage:
-    name: Run all tests
+    name: Upload coverage
     runs-on: "ubuntu-latest"
     strategy:
       matrix:
