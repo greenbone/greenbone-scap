@@ -25,6 +25,7 @@ from .models import (
     CVEModel,
     CVSSv2MetricModel,
     CVSSv3MetricModel,
+    CVSSv4MetricModel,
     NodeModel,
     ReferenceModel,
     VendorCommentModel,
@@ -171,9 +172,13 @@ class CVEManager(AbstractAsyncContextManager):
         cvss_v3_statement = self._db.insert(
             CVSSv3MetricModel
         ).execution_options(render_nulls=True)
+        cvss_v4_statement = self._db.insert(
+            CVSSv4MetricModel
+        ).execution_options(render_nulls=True)
 
         cvss_v2_data = []
         cvss_v3_data = []
+        cvss_v4_data = []
         cve_ids: list[str] = []
 
         for cve in cves:
@@ -266,16 +271,66 @@ class CVEManager(AbstractAsyncContextManager):
                 ]
             )
 
+            cvss_v4_data.extend(
+                [
+                    {
+                        "cve_id": cve.id,
+                        "source": cvss_v4.source,
+                        "type": cvss_v4.type,
+                        "version": cvss_v4.cvss_data.version,
+                        "base_score": cvss_v4.cvss_data.base_score,
+                        "base_severity": cvss_v4.cvss_data.base_severity,
+                        "vector_string": cvss_v4.cvss_data.vector_string,
+                        "attack_vector": cvss_v4.cvss_data.attack_vector,
+                        "attack_complexity": cvss_v4.cvss_data.attack_complexity,
+                        "attack_requirements": cvss_v4.cvss_data.attack_requirements,
+                        "privileges_required": cvss_v4.cvss_data.privileges_required,
+                        "user_interaction": cvss_v4.cvss_data.user_interaction,
+                        "vuln_confidentiality_impact": cvss_v4.cvss_data.vuln_confidentiality_impact,
+                        "vuln_integrity_impact": cvss_v4.cvss_data.vuln_integrity_impact,
+                        "vuln_availability_impact": cvss_v4.cvss_data.vuln_availability_impact,
+                        "sub_confidentiality_impact": cvss_v4.cvss_data.sub_confidentiality_impact,
+                        "sub_integrity_impact": cvss_v4.cvss_data.sub_integrity_impact,
+                        "sub_availability_impact": cvss_v4.cvss_data.sub_availability_impact,
+                        "exploit_maturity": cvss_v4.cvss_data.exploit_maturity,
+                        "confidentiality_requirement": cvss_v4.cvss_data.confidentiality_requirement,
+                        "integrity_requirement": cvss_v4.cvss_data.integrity_requirement,
+                        "availability_requirement": cvss_v4.cvss_data.availability_requirement,
+                        "modified_attack_vector": cvss_v4.cvss_data.modified_attack_vector,
+                        "modified_attack_complexity": cvss_v4.cvss_data.modified_attack_complexity,
+                        "modified_attack_requirements": cvss_v4.cvss_data.modified_attack_requirements,
+                        "modified_privileges_required": cvss_v4.cvss_data.modified_privileges_required,
+                        "modified_user_interaction": cvss_v4.cvss_data.modified_user_interaction,
+                        "modified_vuln_confidentiality_impact": cvss_v4.cvss_data.modified_vuln_confidentiality_impact,
+                        "modified_vuln_integrity_impact": cvss_v4.cvss_data.modified_vuln_integrity_impact,
+                        "modified_vuln_availability_impact": cvss_v4.cvss_data.modified_vuln_availability_impact,
+                        "modified_sub_confidentiality_impact": cvss_v4.cvss_data.modified_sub_confidentiality_impact,
+                        "modified_sub_integrity_impact": cvss_v4.cvss_data.modified_sub_integrity_impact,
+                        "modified_sub_availability_impact": cvss_v4.cvss_data.modified_sub_availability_impact,
+                        "safety": cvss_v4.cvss_data.safety,
+                        "automatable": cvss_v4.cvss_data.automatable,
+                        "recovery": cvss_v4.cvss_data.recovery,
+                        "value_density": cvss_v4.cvss_data.value_density,
+                        "vulnerability_response_effort": cvss_v4.cvss_data.vulnerability_response_effort,
+                        "provider_urgency": cvss_v4.cvss_data.provider_urgency,
+                    }
+                    for cvss_v4 in cve.metrics.cvss_metric_v40
+                ]
+            )
+
         delete_statement = delete(CVSSv2MetricModel).where(
             CVSSv2MetricModel.cve_id.in_(cve_ids)
         )
-
         await connection.execute(delete_statement)
 
         delete_statement = delete(CVSSv3MetricModel).where(
             CVSSv3MetricModel.cve_id.in_(cve_ids)
         )
+        await connection.execute(delete_statement)
 
+        delete_statement = delete(CVSSv4MetricModel).where(
+            CVSSv4MetricModel.cve_id.in_(cve_ids)
+        )
         await connection.execute(delete_statement)
 
         if cvss_v2_data:
@@ -283,6 +338,9 @@ class CVEManager(AbstractAsyncContextManager):
 
         if cvss_v3_data:
             await connection.execute(cvss_v3_statement, cvss_v3_data)
+
+        if cvss_v4_data:
+            await connection.execute(cvss_v4_statement, cvss_v4_data)
 
     async def _insert_cve_descriptions(
         self, connection: AsyncConnection, cves: Sequence[CVE]
@@ -557,8 +615,10 @@ class CVEManager(AbstractAsyncContextManager):
         cwe_id: str | None = None,
         cvss_v2_vector: str | None = None,
         cvss_v3_vector: str | None = None,
+        cvss_v4_vector: str | None = None,
         cvss_v2_severity: str | None = None,
         cvss_v3_severity: str | None = None,
+        cvss_v4_severity: str | None = None,
     ) -> list[ColumnElement[bool]]:
         clauses: list[ColumnElement[bool]] = []
         if cve_ids:
@@ -611,6 +671,12 @@ class CVEManager(AbstractAsyncContextManager):
                     CVSSv3MetricModel.vector_string.ilike(f"%{cvss_v3_vector}%")
                 )
             )
+        if cvss_v4_vector:
+            clauses.append(
+                CVEModel.cvss_metrics_v4.any(
+                    CVSSv4MetricModel.vector_string.ilike(f"%{cvss_v4_vector}%")
+                )
+            )
         if cvss_v2_severity:
             clauses.append(
                 CVEModel.cvss_metrics_v2.any(
@@ -621,6 +687,12 @@ class CVEManager(AbstractAsyncContextManager):
             clauses.append(
                 CVEModel.cvss_metrics_v3.any(
                     CVSSv3MetricModel.base_severity == cvss_v3_severity.upper()
+                )
+            )
+        if cvss_v4_severity:
+            clauses.append(
+                CVEModel.cvss_metrics_v4.any(
+                    CVSSv4MetricModel.base_severity == cvss_v4_severity.upper()
                 )
             )
         return clauses
@@ -641,8 +713,10 @@ class CVEManager(AbstractAsyncContextManager):
         cwe_id: str | None = None,
         cvss_v2_vector: str | None = None,
         cvss_v3_vector: str | None = None,
+        cvss_v4_vector: str | None = None,
         cvss_v2_severity: str | None = None,
         cvss_v3_severity: str | None = None,
+        cvss_v4_severity: str | None = None,
     ) -> AsyncIterator[CVEModel]:
         clauses = self._get_clauses(
             cve_ids=cve_ids,
@@ -656,8 +730,10 @@ class CVEManager(AbstractAsyncContextManager):
             cwe_id=cwe_id,
             cvss_v2_vector=cvss_v2_vector,
             cvss_v3_vector=cvss_v3_vector,
+            cvss_v4_vector=cvss_v4_vector,
             cvss_v2_severity=cvss_v2_severity,
             cvss_v3_severity=cvss_v3_severity,
+            cvss_v4_severity=cvss_v4_severity,
         )
         statement = (
             select(CVEModel)
@@ -666,6 +742,7 @@ class CVEManager(AbstractAsyncContextManager):
                 selectinload(CVEModel.cvss_metrics_v3),
                 selectinload(CVEModel.cvss_metrics_v30),
                 selectinload(CVEModel.cvss_metrics_v31),
+                selectinload(CVEModel.cvss_metrics_v40),
                 selectinload(CVEModel.configurations)
                 .selectinload(ConfigurationModel.nodes)
                 .selectinload(NodeModel.cpe_match),
@@ -707,8 +784,10 @@ class CVEManager(AbstractAsyncContextManager):
         cwe_id: str | None = None,
         cvss_v2_vector: str | None = None,
         cvss_v3_vector: str | None = None,
+        cvss_v4_vector: str | None = None,
         cvss_v2_severity: str | None = None,
         cvss_v3_severity: str | None = None,
+        cvss_v4_severity: str | None = None,
     ) -> int:
         clauses = self._get_clauses(
             cve_ids=cve_ids,
@@ -722,8 +801,10 @@ class CVEManager(AbstractAsyncContextManager):
             cwe_id=cwe_id,
             cvss_v2_vector=cvss_v2_vector,
             cvss_v3_vector=cvss_v3_vector,
+            cvss_v4_vector=cvss_v4_vector,
             cvss_v2_severity=cvss_v2_severity,
             cvss_v3_severity=cvss_v3_severity,
+            cvss_v4_severity=cvss_v4_severity,
         )
 
         statement = select(func.count(CVEModel.id)).where(*clauses)
