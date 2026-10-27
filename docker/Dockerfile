@@ -12,9 +12,9 @@ RUN apt-get update && \
     apt-get remove --purge --auto-remove -y && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pipx install poetry
+RUN pipx install uv
 
-RUN rm -rf dist && /root/.local/bin/poetry build -f wheel
+RUN rm -rf dist && /root/.local/bin/uv build -f wheel
 
 FROM debian:stable-slim
 

@@ -38,7 +38,9 @@ Python 3.11 and later is supported.
 You can install the latest stable release of **greenbone-scap** from the [Python
 Package Index (pypi)][pypi] using [pipx]
 
-    python3 -m pipx install greenbone-scap
+```sh
+python3 -m pipx install greenbone-scap
+```
 
 ### Install using pip
 
@@ -50,17 +52,19 @@ Package Index (pypi)][pypi] using [pipx]
 You can install the latest stable release of **greenbone-scap** from the [Python
 Package Index (pypi)][pypi] using [pip]
 
-    python3 -m pip install --user greenbone-scap
+```sh
+python3 -m pip install --user greenbone-scap
+```
 
 ## Usage
 
 The **greenbone-scap** Python package provides three tools,
 
-* `greenbone-cve-download` to download all CVE information from NIST NVD into
+- `greenbone-cve-download` to download all CVE information from NIST NVD into
   a PostgreSQL database,
-* `greenbone-cpe-download` to download all CPE information from NIST NVD into a
+- `greenbone-cpe-download` to download all CPE information from NIST NVD into a
   PostgreSQL database and
-* `greenbone-cpe-find` to search for specific CPEs in the PostgreSQL database.
+- `greenbone-cpe-find` to search for specific CPEs in the PostgreSQL database.
 
 All three tools require to setup a PostgreSQL database to work correctly. The
 parameters for the PostgreSQL database like host, port, username and password
@@ -141,30 +145,27 @@ eval "$(greenbone-cve-download --print-completion zsh)"
 
 ## Development
 
-**greenbone-scap** uses [poetry] for its own dependency management and build
+**greenbone-scap** uses [uv] for its own dependency management and build
 process.
 
-First install poetry via [pipx]
+First install uv via [pipx]
 
-    python3 -m pipx install poetry
-
-Afterwards run
-
-    poetry install
-
-in the checkout directory of **greenbone-scap** (the directory containing the
-`pyproject.toml` file) to install all dependencies including the packages only
-required for development.
+```sh
+python3 -m pipx install uv
+```
 
 Afterwards activate the git hooks for auto-formatting and linting via
 [autohooks].
 
-    poetry run autohooks activate
+```sh
+uv run autohooks activate
+```
 
 Validate the activated git hooks by running
 
-    poetry run autohooks check
-
+```sh
+uv run autohooks check
+```
 
 ## Maintainer
 
@@ -180,13 +181,13 @@ first.
 
 ## License
 
-Copyright (C) 2024 [Greenbone AG][Greenbone]
+Copyright (C) 2024 - 2026 [Greenbone AG][Greenbone]
 
 Licensed under the [GNU General Public License v3.0 or later](LICENSE).
 
 [Greenbone]: https://www.greenbone.net/
-[poetry]: https://python-poetry.org/
 [pip]: https://pip.pypa.io/
 [pipx]: https://pypa.github.io/pipx/
 [autohooks]: https://github.com/greenbone/autohooks
 [pypi]: https://pypi.org
+[uv]: https://docs.astral.sh/uv/
