@@ -83,6 +83,16 @@ class CVEModel(Base):
     cisa_required_action: Mapped[str | None]
     cisa_vulnerability_name: Mapped[str | None]
 
+    cvss_metrics_v4: Mapped[list["CVSSv4MetricModel"]] = relationship(
+        back_populates="cve"
+    )
+    cvss_metrics_v40: Mapped[list["CVSSv4MetricModel"]] = relationship(
+        primaryjoin=lambda: and_(
+            CVEModel.id == CVSSv4MetricModel.cve_id,
+            CVSSv4MetricModel.version == "4.0",
+        ),
+        viewonly=True,
+    )
     cvss_metrics_v3: Mapped[list["CVSSv3MetricModel"]] = relationship(
         back_populates="cve"
     )
@@ -333,3 +343,54 @@ class CVSSv3MetricModel(Base):
     environmental_severity: Mapped[str | None]
 
     cve: Mapped[CVEModel] = relationship(back_populates="cvss_metrics_v3")
+
+
+class CVSSv4MetricModel(Base):
+    __tablename__ = "cve_cvss_metric_v4"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    cve_id: Mapped[str] = mapped_column(
+        ForeignKey("cves.id", ondelete="CASCADE")
+    )
+    source: Mapped[str]
+    type: Mapped[str]
+
+    # cvss_data
+    vector_string: Mapped[str]
+    version: Mapped[str]
+    base_score: Mapped[float]
+    base_severity: Mapped[str]
+    attack_vector: Mapped[str | None]
+    attack_complexity: Mapped[str | None]
+    attack_requirements: Mapped[str | None]
+    privileges_required: Mapped[str | None]
+    user_interaction: Mapped[str | None]
+    vuln_confidentiality_impact: Mapped[str | None]
+    vuln_integrity_impact: Mapped[str | None]
+    vuln_availability_impact: Mapped[str | None]
+    sub_confidentiality_impact: Mapped[str | None]
+    sub_integrity_impact: Mapped[str | None]
+    sub_availability_impact: Mapped[str | None]
+    exploit_maturity: Mapped[str | None]
+    confidentiality_requirement: Mapped[str | None]
+    integrity_requirement: Mapped[str | None]
+    availability_requirement: Mapped[str | None]
+    modified_attack_vector: Mapped[str | None]
+    modified_attack_complexity: Mapped[str | None]
+    modified_attack_requirements: Mapped[str | None]
+    modified_privileges_required: Mapped[str | None]
+    modified_user_interaction: Mapped[str | None]
+    modified_vuln_confidentiality_impact: Mapped[str | None]
+    modified_vuln_integrity_impact: Mapped[str | None]
+    modified_vuln_availability_impact: Mapped[str | None]
+    modified_sub_confidentiality_impact: Mapped[str | None]
+    modified_sub_integrity_impact: Mapped[str | None]
+    modified_sub_availability_impact: Mapped[str | None]
+    safety: Mapped[str | None]
+    automatable: Mapped[str | None]
+    recovery: Mapped[str | None]
+    value_density: Mapped[str | None]
+    vulnerability_response_effort: Mapped[str | None]
+    provider_urgency: Mapped[str | None]
+
+    cve: Mapped[CVEModel] = relationship(back_populates="cvss_metrics_v4")
